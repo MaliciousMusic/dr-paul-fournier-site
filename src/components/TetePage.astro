@@ -1,0 +1,23 @@
+---
+// Top of every inner page: breadcrumb, the title filling the width, then the answer in one sentence.
+import { href, UI, type Lang } from '../i18n';
+interface Props { lang: Lang; titre: string; chapo?: string; sur?: string; parent?: { nom: string; chemin: string } }
+const { lang, titre, chapo, sur, parent } = Astro.props;
+const bas = chapo || Astro.slots.has('default');
+---
+<header class="tete-page topo">
+  <div class="tete-page-in">
+    <div class="tete-page-haut">
+      <p class="fil"><a href={href(lang)}>{UI[lang].accueil}</a>{parent && <> / <a href={href(lang, parent.chemin)}>{parent.nom}</a></>}</p>
+      {sur && <span class="sur">{sur}</span>}
+    </div>
+    <h1>{titre}</h1>
+    {bas && (
+      <div class="tete-page-bas">
+        {chapo && <p class="chapo">{chapo}</p>}
+        <slot />
+      </div>
+    )}
+  </div>
+  <div class="regle" aria-hidden="true"></div>
+</header>

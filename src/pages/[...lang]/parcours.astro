@@ -1,0 +1,77 @@
+---
+import Base from '../../layouts/Base.astro';
+import TetePage from '../../components/TetePage.astro';
+import Annexes from '../../components/Annexes.astro';
+import Todo from '../../components/Todo.astro';
+import { PRATICIEN } from '../../config';
+import { PRESSE } from '../../data/presse';
+import { fil, idPersonne } from '../../seo';
+import { UI, href, localePaths, type Lang } from '../../i18n';
+export function getStaticPaths() { return localePaths(); }
+const lang = Astro.props.lang as Lang;
+const site = Astro.site!;
+const C = {
+  fr: {
+    seo: `Qui est le Dr Paul Fournier, chirurgien-dentiste à Clermont ?`,
+    desc: `Le parcours du Dr Paul Fournier, chirurgien-dentiste à ${PRATICIEN.ville} : formation à Clermont-Ferrand, CHU, université, ITI, formations et interventions.`,
+    titre: 'Qui est le Dr Paul Fournier ?',
+    bref: `est chirurgien-dentiste à ${PRATICIEN.ville}. Formé à Clermont-Ferrand, il exerce à Clermont-Ferrand et à Brioude, en cabinet et à la clinique, et forme d’autres praticiens.`,
+    etapes: [
+      ['Formation', 'Faculté de chirurgie dentaire de Clermont-Ferrand', 'dates et diplômes'],
+      ['CHU et université', 'Fonctions occupées au CHU et à l’université', 'intitulés exacts et dates'],
+      ['Spécialisation', 'Diplômes universitaires et formations complémentaires', 'liste, avec mention des titres non reconnus par l’Ordre'],
+      ['Aujourd’hui', 'Exercice à Clermont-Ferrand et à Brioude, en cabinet et à la clinique', 'à valider'],
+    ],
+    itiT: 'Sociétés scientifiques', iti: 'ITI (International Team for Implantology)', itiNote: 'statut exact',
+    pubT: 'Publications', pub: 'Publications et communications choisies.',
+    ecouterT: 'À écouter', ecouter: 'Écouter',
+    regle: 'Tous les diplômes et titres cités peuvent être justifiés.',
+  },
+  en: {
+    seo: `Who is Dr Paul Fournier, dental surgeon in Clermont-Ferrand?`,
+    desc: `The background of Dr Paul Fournier, dental surgeon in ${PRATICIEN.ville}, France: training in Clermont-Ferrand, university hospital, university, ITI, courses and talks.`,
+    titre: 'Who is Dr Paul Fournier?',
+    bref: `is a dental surgeon in ${PRATICIEN.ville}, France. Trained in Clermont-Ferrand, he practises in Clermont-Ferrand and Brioude, at his practices and the clinic, and teaches other practitioners.`,
+    etapes: [
+      ['Training', 'Faculty of Dentistry, Clermont-Ferrand', 'dates and degrees'],
+      ['University hospital and university', 'Roles held at the university hospital and the university', 'exact titles and dates'],
+      ['Further training', 'University diplomas and additional courses', 'list, marking titles not recognised by the Order'],
+      ['Today', 'Practising in Clermont-Ferrand and Brioude, at his practices and the clinic', 'to validate'],
+    ],
+    itiT: 'Scientific societies', iti: 'ITI (International Team for Implantology)', itiNote: 'exact status',
+    pubT: 'Publications', pub: 'A selection of publications and talks.',
+    ecouterT: 'Listen', ecouter: 'Listen',
+    regle: 'All degrees and titles mentioned can be verified.',
+  },
+}[lang];
+const ld = [
+  { '@type': 'ProfilePage', name: C.titre, mainEntity: { '@id': idPersonne(site) }, inLanguage: lang },
+  fil(site, lang, [{ nom: UI[lang].accueil, chemin: '' }, { nom: C.titre, chemin: 'parcours' }]),
+];
+---
+<Base lang={lang} titre={C.seo} description={C.desc} chemin="parcours" ld={ld}>
+  <TetePage lang={lang} titre={C.titre} sur={PRATICIEN.titre[lang]} />
+  <section class="section">
+    <div class="large split">
+      <div>
+        <p class="bref"><strong>{PRATICIEN.nom}</strong> {C.bref} <Todo t="à valider" /></p>
+        {C.etapes.map(([a, b, c]) => <div class="evenement"><strong>{a}</strong><div>{b} <Todo t={c} /></div></div>)}
+        <p class="note" style="margin-top:12px">{C.regle}</p>
+      </div>
+      <div>
+        <div class="bloc"><h2>{C.itiT}</h2><p>{C.iti} <Todo t={C.itiNote} /></p></div>
+        <div class="bloc"><h2>{C.pubT}</h2><p>{C.pub} <Todo /></p></div>
+        <div class="bloc">
+          <h2>{C.ecouterT}</h2>
+          {PRESSE.filter((p) => p.podcast).map((a) => (
+            <div class="ligne-media">
+              <div><strong>{a.titre}</strong><br /><span class="note">{a.type[lang]}</span> <Todo t="lien de l’épisode" /></div>
+              <a class="btn btn-contour" href={a.lien} rel="noopener">{C.ecouter}</a>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+  <Annexes lang={lang} depuis="parcours" />
+</Base>

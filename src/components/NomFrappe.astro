@@ -1,0 +1,162 @@
+---
+// The name on the landing. The h1 always holds the real name, for search engines and screen readers. Over it, a decorative
+// layer: each text types itself across the full width, flattens from the top, then compresses sideways into one of two wings,
+// left then right, so the finished block is short. The name waits flat at the foot, then rises and holds above the block.
+// The wings open and it starts again. No JavaScript: the plain name. Reduced motion: that final state at once, nothing moves.
+const { nom1, nom2, ajuste, actes } = Astro.props as { nom1: string; nom2: string; ajuste: string; actes: string[] };
+const nom = `${nom1} ${nom2}`;
+---
+<div id="nom" class="accueil-titre" style={ajuste}>
+  <h1 class="accueil-nom"><span class="l1">{nom1}</span> <span class="l2">{nom2}</span></h1>
+  <div class="frappe" aria-hidden="true">
+    <div class="frappe-bloc"></div>
+    <div class="frappe-grand"></div>
+  </div>
+</div>
+
+<script is:inline define:vars={{ nom, actes }}>
+  (function () {
+    var racine = document.documentElement, boite = document.getElementById('nom'), calque = boite.querySelector('.frappe');
+    var grand = calque.querySelector('.frappe-grand'), bloc = calque.querySelector('.frappe-bloc');
+    boite.classList.add('tape');
+    var liste = [nom].concat(actes), rang = 0, phrase = nom, lignes = [], n = 0, pile = [];
+    var RANGEES = Math.ceil(actes.length / 2);
+
+    // Sizes of the finished block: the wings fill its height exactly
+    function mesure() {
+      var H = bloc.clientHeight, L = bloc.clientWidth, ecart = Math.max(2, Math.round(H * 0.035)), milieu = Math.max(8, Math.round(L * 0.015));
+      return { h: (H - (RANGEES - 1) * ecart) / RANGEES, ecart: ecart, L: L, aile: (L - milieu) / 2 };
+    }
+    var nomAuPied = function () { return pile.length && pile[0].aile === null ? 1 : 0; };
+    var nbActes = function () { return pile.length - nomAuPied(); };
+    var rangees = function () { return Math.ceil(nbActes() / 2) + nomAuPied(); };
+    // Where a line goes: its row, its wing; the name, when it is there, is one full-width row under the others
+    function case_(p, m, pied) {
+      if (p.aile === null) return { x: 0, y: 0, w: m.L };
+      return { x: p.aile ? m.L - m.aile : 0, y: (p.rangee + pied) * (m.h + m.ecart), w: m.aile };
+    }
+    function place(p, m, pied) {
+      var c = case_(p, m, pied);
+      p.el.style.width = c.w.toFixed(2) + 'px';
+      p.el.style.height = m.h.toFixed(2) + 'px';
+      p.el.style.transform = 'translate(' + c.x.toFixed(2) + 'px,' + (-c.y).toFixed(2) + 'px)';
+    }
+    function range() {
+      var m = mesure(), pied = nomAuPied();
+      pile.forEach(function (p) { place(p, m, pied); });
+    }
+    function ajoute(texte) {
+      var el = document.createElement('div'), a = nbActes();
+      var p = texte === nom ? { el: el, texte: texte, aile: null, rangee: 0 } : { el: el, texte: texte, aile: a % 2, rangee: Math.floor(a / 2) };
+      el.className = 'frappe-li';
+      pile.push(p);
+      place(p, mesure(), nomAuPied()); // already in place, it must not slide there
+      bloc.appendChild(el);
+      impact.pose(el, texte, null, true);
+    }
+    function poseBloc() {
+      range();
+      pile.forEach(function (p) { impact.pose(p.el, p.texte, null, true); });
+    }
+
+    // The whole phrase is laid out first, so each letter lands at its final place as it is typed. It stands on the rows below.
+    function pose() {
+      var m = mesure();
+      grand.style.bottom = (rangees() * (m.h + m.ecart)).toFixed(2) + 'px';
+      lignes = impact.pose(grand, phrase);
+      affiche();
+    }
+    function affiche() {
+      var reste = n;
+      lignes.forEach(function (l) {
+        var k = Math.min(reste, l.texte.length);
+        l.el.textContent = l.texte.slice(0, k);
+        reste -= k;
+      });
+    }
+    function total() { return lignes.reduce(function (s, l) { return s + l.texte.length; }, 0); }
+    function adoucit(u) { u = u < 0 ? 0 : u > 1 ? 1 : u; return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; }
+    // The whole movement computed in advance and handed to the browser, which plays it apart from the rest of the page.
+    // The height goes first, the width takes over before it is done: one gesture, no stop between the two.
+    function geste(de, a, finH, debutL) {
+      var F = [], N = 40, i;
+      for (i = 0; i <= N; i++) {
+        var t = i / N, eh = adoucit(t / finH), el = adoucit((t - debutL) / (1 - debutL));
+        F.push({ transform: 'translate(' + ((a.left - de.left) * el).toFixed(2) + 'px,' + ((a.top - de.top) * eh).toFixed(2) + 'px) scale(' + (1 + (a.width / de.width - 1) * el).toFixed(4) + ',' + (1 + (a.height / de.height - 1) * eh).toFixed(4) + ')', opacity: t < 0.8 ? 1 : (1 - t) / 0.2 });
+      }
+      return F;
+    }
+
+    function suivante() {
+      phrase = liste[rang++];
+      n = 0;
+      pose();
+      tape();
+    }
+    function tape() {
+      affiche();
+      if (n < total()) { n++; setTimeout(tape, phrase === nom ? 65 : 45); return; }
+      setTimeout(aplatit, phrase === nom ? 6500 : 2800);
+    }
+    // The top edge comes down, as wide as ever, and the sides close in as it lands. The name stays full width, at the foot.
+    // Near the end the real line fades in under the big text, which fades out: lines that were two become one without a jump.
+    function aplatit() {
+      var est = phrase === nom, G = grand.getBoundingClientRect(), D = est ? 850 : 1050;
+      ajoute(phrase);
+      var ligne = pile[pile.length - 1].el;
+      var A = grand.animate(geste(G, ligne.getBoundingClientRect(), est ? 1 : 0.68, est ? 0 : 0.32), { duration: D, fill: 'forwards' });
+      ligne.animate([{ opacity: 0, offset: 0 }, { opacity: 0, offset: 0.62 }, { opacity: 1, offset: 0.82 }, { opacity: 1, offset: 1 }], { duration: D });
+      setTimeout(function () {
+        grand.textContent = '';
+        A.cancel();
+        lignes = [];
+        if (rang < liste.length) setTimeout(suivante, 800);
+        else setTimeout(finale, 700);
+      }, D + 20);
+    }
+    // The name rises from the foot and opens up above; the wings settle into its place
+    function finale() {
+      var ligne = pile.shift(), L = ligne.el.getBoundingClientRect(), D = 950;
+      range();
+      phrase = nom;
+      n = Infinity;
+      pose();
+      var F = geste(grand.getBoundingClientRect(), L, 1, 0).reverse();
+      grand.animate(F, { duration: D });
+      ligne.el.animate([{ opacity: 1, offset: 0 }, { opacity: 1, offset: 0.1 }, { opacity: 0, offset: 0.35 }, { opacity: 0, offset: 1 }], { duration: D, fill: 'forwards' });
+      setTimeout(function () {
+        ligne.el.remove();
+        setTimeout(ouvre, 6500);
+      }, D + 20);
+    }
+    // The wings open, each by its own side, from the top row down; then the name flattens to the foot and it starts over
+    function ouvre() {
+      var m = mesure(), L = m.L + m.aile * 0.1;
+      pile.forEach(function (p) {
+        setTimeout(function () {
+          p.el.style.transform = 'translate(' + (p.aile ? L : -L).toFixed(2) + 'px,' + (-p.rangee * (m.h + m.ecart)).toFixed(2) + 'px)';
+        }, (RANGEES - 1 - p.rangee) * 90);
+      });
+      setTimeout(function () {
+        pile.forEach(function (p) { p.el.remove(); });
+        pile = [];
+        rang = 1;
+        aplatit();
+      }, (RANGEES - 1) * 90 + 820);
+    }
+    function depart() {
+      addEventListener('resize', function () { pose(); poseBloc(); });
+      impact.pret(function () {
+        if (!matchMedia('(prefers-reduced-motion: reduce)').matches) return suivante();
+        actes.forEach(ajoute);
+        n = Infinity;
+        pose();
+      });
+    }
+    // After the opening, on the first visit: the name starts typing as the screen finishes opening
+    var pret = function () { return !racine.classList.contains('splash') || racine.classList.contains('splash-nom'); };
+    if (pret()) return depart();
+    var guet = new MutationObserver(function () { if (pret()) { guet.disconnect(); depart(); } });
+    guet.observe(racine, { attributes: true, attributeFilter: ['class'] });
+  })();
+</script>

@@ -1,0 +1,38 @@
+---
+import Base from '../../layouts/Base.astro';
+import TetePage from '../../components/TetePage.astro';
+import Annexes from '../../components/Annexes.astro';
+import Lieux from '../../components/Lieux.astro';
+import Todo from '../../components/Todo.astro';
+import { PRATICIEN } from '../../config';
+import { fil } from '../../seo';
+import { UI, localePaths, type Lang } from '../../i18n';
+export function getStaticPaths() { return localePaths(); }
+const lang = Astro.props.lang as Lang;
+const C = {
+  fr: {
+    titre: 'Contact', seo: `Contact et rendez-vous, Dr Paul Fournier, ${PRATICIEN.ville} et Brioude`, desc: `Prendre rendez-vous avec le Dr Paul Fournier, chirurgien-dentiste à ${PRATICIEN.ville} et à Brioude : par téléphone, au cabinet ou à la clinique. Adresses et horaires.`,
+    chapo: 'Le rendez-vous se prend par téléphone. Vous aurez quelqu’un au bout du fil.',
+    equipe: 'Le secrétariat vous répond et organise votre venue.', role: 'rôles et accord pour les nommer',
+    donnees: 'Merci de ne pas envoyer d’informations médicales par e-mail. En cas d’urgence, composez le 15.',
+  },
+  en: {
+    titre: 'Contact', seo: `Contact and appointments, Dr Paul Fournier, ${PRATICIEN.ville} and Brioude`, desc: `Make an appointment with Dr Paul Fournier, dental surgeon in ${PRATICIEN.ville} and Brioude, France: by phone, at the practice or the clinic. Addresses and opening hours.`,
+    chapo: 'Appointments are made by phone. You will speak to a real person.',
+    equipe: 'The secretariat will answer and organise your visit.', role: 'roles and consent to be named',
+    donnees: 'Please do not send medical information by e-mail. In an emergency in France, call 15.',
+  },
+}[lang];
+const ld = [fil(Astro.site!, lang, [{ nom: UI[lang].accueil, chemin: '' }, { nom: C.titre, chemin: 'contact' }])];
+---
+<Base lang={lang} titre={C.seo} description={C.desc} chemin="contact" ld={ld}>
+  <TetePage lang={lang} titre={C.titre} chapo={C.chapo} />
+  <section class="section">
+    <div class="large">
+      <Lieux lang={lang} />
+      <p style="margin-top:18px">{C.equipe} <Todo t={C.role} /></p>
+      <p class="note">{C.donnees}</p>
+    </div>
+  </section>
+  <Annexes lang={lang} depuis="contact" />
+</Base>

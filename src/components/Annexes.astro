@@ -1,0 +1,24 @@
+---
+// The next useful step: keeps pages short, and links the whole site together for readers and search engines.
+import { CATEGORIES, type Categorie } from '../data/categories';
+import { href, UI, type Lang } from '../i18n';
+interface Lien { titre: string; phrase: string; chemin: string }
+interface Props { lang: Lang; depuis?: Categorie; extra?: Lien[] }
+const { lang, depuis, extra = [] } = Astro.props;
+const cats = depuis ? CATEGORIES[depuis].liees : [];
+const liens: Lien[] = [
+  ...extra,
+  ...cats.map((c) => ({ titre: CATEGORIES[c].nom[lang], phrase: CATEGORIES[c].phrase[lang], chemin: c as string })),
+];
+---
+<section class="section annexes" aria-label={UI[lang].aVoir}>
+  <span class="sur">{UI[lang].aVoir}</span>
+  <div class="annexes-grille">
+      {liens.map((l) => (
+        <a class="tuile" href={href(lang, l.chemin)}>
+          <h2>{l.titre}</h2>
+          <p>{l.phrase}</p>
+        </a>
+      ))}
+  </div>
+</section>

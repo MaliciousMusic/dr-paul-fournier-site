@@ -1,0 +1,48 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import TetePage from '../../../components/TetePage.astro';
+import Annexes from '../../../components/Annexes.astro';
+import Todo from '../../../components/Todo.astro';
+import { DRAFT, PRATICIEN } from '../../../config';
+import { PRATIQUES } from '../../../data/pratiques';
+import { fil, idPersonne } from '../../../seo';
+import { UI, asset, type Lang } from '../../../i18n';
+
+export async function getStaticPaths() {
+  const all = await getCollection('articles');
+  return all
+    .filter((a) => DRAFT || !a.data.brouillon)
+    .map((a) => ({ params: { lang: a.data.langue === 'fr' ? undefined : 'en', slug: a.id }, props: { lang: a.data.langue as Lang, a } }));
+}
+const { lang, a } = Astro.props as { lang: Lang; a: Awaited<ReturnType<typeof getCollection<'articles'>>>[number] };
+const { Content } = await render(a);
+const site = Astro.site!;
+const d = a.data;
+const parent = lang === 'fr' ? 'Articles et presse' : 'Articles and press';
+const par = lang === 'fr' ? 'Rédigé et relu par' : 'Written and reviewed by';
+const srcT = lang === 'fr' ? 'Sources' : 'Sources';
+const pratique = PRATIQUES.find((p) => p.slug === d.pratique);
+const extra = pratique ? [{ titre: pratique.titre[lang], phrase: pratique.court[lang], chemin: `pratiques/${pratique.slug}` }] : [];
+const ld = [
+  {
+    '@type': 'Article', headline: d.titre, description: d.description, inLanguage: lang,
+    author: { '@id': idPersonne(site) }, publisher: { '@id': idPersonne(site) }, image: new URL(asset('og.png'), site).href,
+    ...(d.date && { datePublished: d.date.toISOString() }),
+  },
+  fil(site, lang, [{ nom: UI[lang].accueil, chemin: '' }, { nom: parent, chemin: 'articles' }, { nom: d.titre, chemin: `articles/${a.id}` }]),
+];
+---
+<Base lang={lang} titre={`${d.titre} | ${PRATICIEN.nom}`} description={d.description} chemin={`articles/${a.id}`} ld={ld} sansTraduction>
+  <TetePage lang={lang} titre={d.titre} parent={{ nom: parent, chemin: 'articles' }} />
+  <section class="section">
+    <article class="large etroit contenu">
+      <p class="note">{par} {PRATICIEN.nom}, {PRATICIEN.titre[lang].toLowerCase()} à {PRATICIEN.ville}. {d.brouillon && <Todo t="brouillon à valider par Paul" />}</p>
+      <Content />
+      <p class="note">{UI[lang].prudence}</p>
+      <h2>{srcT}</h2>
+      {d.sources.length ? <ul>{d.sources.map((s) => <li><a href={s.lien} rel="noopener">{s.nom}</a></li>)}</ul> : <Todo t="sources à ajouter" />}
+    </article>
+  </section>
+  <Annexes lang={lang} depuis="articles" extra={extra} />
+</Base>

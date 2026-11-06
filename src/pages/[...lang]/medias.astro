@@ -1,0 +1,31 @@
+---
+import Base from '../../layouts/Base.astro';
+import TetePage from '../../components/TetePage.astro';
+import Annexes from '../../components/Annexes.astro';
+import VideoSlot from '../../components/VideoSlot.astro';
+import { PRATICIEN } from '../../config';
+import { VIDEOS } from '../../data/medias';
+import { fil, idPersonne } from '../../seo';
+import { UI, localePaths, type Lang } from '../../i18n';
+export function getStaticPaths() { return localePaths(); }
+const lang = Astro.props.lang as Lang;
+const site = Astro.site!;
+const C = {
+  fr: { titre: 'Vidéos', seo: `Vidéos du Dr Paul Fournier, chirurgien-dentiste à ${PRATICIEN.ville}`, chapo: 'Procédures, préparation, formations et événements.', desc: `Les vidéos du Dr Paul Fournier, chirurgien-dentiste à ${PRATICIEN.ville} : procédures expliquées, impression 3D, formations et événements.` },
+  en: { titre: 'Videos', seo: `Videos by Dr Paul Fournier, dental surgeon in ${PRATICIEN.ville}`, chapo: 'Procedures, preparation, courses and events.', desc: `Videos by Dr Paul Fournier, dental surgeon in ${PRATICIEN.ville}, France: procedures explained, 3D printing, courses and events.` },
+}[lang];
+// Google needs a real file, a thumbnail and a date: only published videos are declared.
+const publiees = VIDEOS.filter((v) => v.src && v.poster && v.date).map((v) => ({
+  '@type': 'VideoObject', name: v.titre[lang], description: v.titre[lang], thumbnailUrl: new URL(v.poster, site).href, contentUrl: new URL(v.src, site).href, uploadDate: v.date, creator: { '@id': idPersonne(site) }, inLanguage: lang,
+}));
+const ld = [...publiees, fil(site, lang, [{ nom: UI[lang].accueil, chemin: '' }, { nom: C.titre, chemin: 'medias' }])];
+---
+<Base lang={lang} titre={C.seo} description={C.desc} chemin="medias" ld={ld}>
+  <TetePage lang={lang} titre={C.titre} chapo={C.chapo} />
+  <section class="section">
+    <div class="large videos">
+      {VIDEOS.map((v) => <VideoSlot video={v} lang={lang} />)}
+    </div>
+  </section>
+  <Annexes lang={lang} depuis="medias" />
+</Base>

@@ -1,0 +1,31 @@
+---
+import Base from '../../../layouts/Base.astro';
+import TetePage from '../../../components/TetePage.astro';
+import Annexes from '../../../components/Annexes.astro';
+import { PRATICIEN } from '../../../config';
+import { PRATIQUES } from '../../../data/pratiques';
+import { fil } from '../../../seo';
+import { UI, href, localePaths, type Lang } from '../../../i18n';
+export function getStaticPaths() { return localePaths(); }
+const lang = Astro.props.lang as Lang;
+const t = UI[lang];
+const C = {
+  fr: { titre: 'Pratiques', seo: `Pratiques du Dr Paul Fournier, chirurgien-dentiste à ${PRATICIEN.ville}`, chapo: 'Ce que le Dr Fournier réalise, expliqué simplement.', desc: `Implants, régénération osseuse, reconstruction complète, dents de sagesse, chirurgie parodontale, anesthésie générale et impression 3D à ${PRATICIEN.ville}.` },
+  en: { titre: 'Treatments', seo: `Treatments by Dr Paul Fournier, dental surgeon in ${PRATICIEN.ville}`, chapo: 'What Dr Fournier does, explained simply.', desc: `Implants, bone regeneration, full reconstruction, wisdom teeth, periodontal surgery, general anaesthesia and 3D printing in ${PRATICIEN.ville}, France.` },
+}[lang];
+const ld = [fil(Astro.site!, lang, [{ nom: UI[lang].accueil, chemin: '' }, { nom: C.titre, chemin: 'pratiques' }])];
+---
+<Base lang={lang} titre={C.seo} description={C.desc} chemin="pratiques" ld={ld}>
+  <TetePage lang={lang} titre={C.titre} chapo={C.chapo} />
+  <section>
+      <div class="bento bento-plein">
+        {PRATIQUES.map((p) => (
+          <a class="tuile" href={href(lang, `pratiques/${p.slug}`)}>
+            <h2>{p.titre[lang]}</h2><p>{p.court[lang]}</p>
+          </a>
+        ))}
+      </div>
+      <p class="note large" style="margin-block:18px">{t.prudence}</p>
+  </section>
+  <Annexes lang={lang} depuis="pratiques" />
+</Base>

@@ -1,0 +1,7 @@
+# Working version: closed to search engines. At launch, replace with:
+# User-agent: *
+# Allow: /
+# Disallow: /api/
+# Sitemap: https://dr-fournier-paul.chirurgiens-dentistes.fr/sitemap-index.xml
+User-agent: *
+Disallow: /

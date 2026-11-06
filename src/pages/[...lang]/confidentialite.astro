@@ -1,0 +1,43 @@
+---
+import Base from '../../layouts/Base.astro';
+import TetePage from '../../components/TetePage.astro';
+import Todo from '../../components/Todo.astro';
+import { PRATICIEN } from '../../config';
+import { localePaths, type Lang } from '../../i18n';
+export function getStaticPaths() { return localePaths(); }
+const lang = Astro.props.lang as Lang;
+const C = {
+  fr: {
+    titre: 'Confidentialité', desc: 'Comment le site du Dr Paul Fournier utilise vos données.',
+    blocs: [
+      ['Ce que le site ne fait pas', 'Pas de prise de rendez-vous en ligne, pas de dossier médical, pas de cookie publicitaire, pas de bandeau parce que rien ne le nécessite. Merci de ne pas envoyer d’informations médicales par e-mail.'],
+      ['La liste de diffusion', 'Si vous vous inscrivez, nous conservons votre adresse e-mail, votre profession, la langue choisie et la date de votre accord, uniquement pour vous annoncer des formations et des événements. Vous pouvez vous désinscrire à tout moment, et ces données sont alors supprimées.'],
+      ['Mesure de fréquentation', 'Le site utilise des statistiques de fréquentation anonymes fournies par son hébergeur, sans cookie.'],
+      ['Hébergement', 'Le site et la liste de diffusion sont hébergés par Cloudflare. Cette société américaine peut traiter des données hors de l’Union européenne.'],
+      ['Vos droits', 'Vous pouvez demander l’accès à vos données, leur correction ou leur suppression, et saisir la CNIL.'],
+    ],
+    contact: 'Contact pour ces demandes :',
+  },
+  en: {
+    titre: 'Privacy', desc: 'How Dr Paul Fournier’s website uses your data.',
+    blocs: [
+      ['What the site does not do', 'No online booking, no medical file, no advertising cookie, and no banner because nothing requires one. Please do not send medical information by e-mail.'],
+      ['The mailing list', 'If you sign up, we keep your e-mail address, your profession, your language and the date of your consent, only to announce courses and events. You can unsubscribe at any time, and this data is then deleted.'],
+      ['Audience measurement', 'The site uses anonymous visit statistics from its hosting provider, without cookies.'],
+      ['Hosting', 'The site and the mailing list are hosted by Cloudflare. This US company may process data outside the European Union.'],
+      ['Your rights', 'You can request access to your data, its correction or deletion, and contact the French data protection authority (CNIL).'],
+    ],
+    contact: 'Contact for these requests:',
+  },
+}[lang];
+---
+<Base lang={lang} titre={`${C.titre} | ${PRATICIEN.nom}`} description={C.desc} chemin="confidentialite">
+  <TetePage lang={lang} titre={C.titre} />
+  <section class="section">
+    <div class="large etroit">
+      {C.blocs.map(([a, b]) => <><h2>{a}</h2><p>{b}</p></>)}
+      <p>{C.contact} {PRATICIEN.email || <Todo />}</p>
+      <Todo t="à faire relire" />
+    </div>
+  </section>
+</Base>

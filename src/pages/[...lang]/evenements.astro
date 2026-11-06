@@ -1,0 +1,43 @@
+---
+import Base from '../../layouts/Base.astro';
+import TetePage from '../../components/TetePage.astro';
+import Annexes from '../../components/Annexes.astro';
+import Liste from '../../components/Liste.astro';
+import Todo from '../../components/Todo.astro';
+import { DRAFT, PRATICIEN } from '../../config';
+import { EVENEMENTS } from '../../data/evenements';
+import { fil } from '../../seo';
+import { UI, localePaths, type Lang } from '../../i18n';
+export function getStaticPaths() { return localePaths(); }
+const lang = Astro.props.lang as Lang;
+const C = {
+  fr: { titre: 'Événements', seo: `Formations et événements, Dr Paul Fournier, ${PRATICIEN.ville}`, chapo: 'Formations organisées et événements couverts, pour les praticiens.', desc: `Les formations et événements organisés ou animés par le Dr Paul Fournier, chirurgien-dentiste à ${PRATICIEN.ville}.`, venir: 'À venir', passes: 'Déjà passés', listeT: 'Recevoir les prochaines dates', listeC: 'Une annonce quand une date s’ouvre, rien de plus.', conf: 'à confirmer avec Paul' },
+  en: { titre: 'Events', seo: `Courses and events, Dr Paul Fournier, ${PRATICIEN.ville}`, chapo: 'Courses organised and events covered, for practitioners.', desc: `Courses and events organised or led by Dr Paul Fournier, dental surgeon in ${PRATICIEN.ville}, France.`, venir: 'Upcoming', passes: 'Past', listeT: 'Get the upcoming dates', listeC: 'One announcement when a date opens, nothing more.', conf: 'to confirm with Paul' },
+}[lang];
+const fmt = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+const passes = EVENEMENTS.filter((e) => DRAFT || !e.aConfirmer);
+const ld = [fil(Astro.site!, lang, [{ nom: UI[lang].accueil, chemin: '' }, { nom: C.titre, chemin: 'evenements' }])];
+---
+<Base lang={lang} titre={C.seo} description={C.desc} chemin="evenements" ld={ld}>
+  <TetePage lang={lang} titre={C.titre} chapo={C.chapo} />
+  <section class="section">
+    <div class="large split">
+      <div>
+        <h2>{C.venir}</h2><p><Todo /></p>
+        <h2>{C.passes}</h2>
+        {passes.map((e) => (
+          <article class="evenement">
+            <time datetime={e.date}>{fmt.format(new Date(e.date))}</time>
+            <div><strong>{e.titre}</strong><br />{e.organisateur}, {e.lieu} {e.aConfirmer && <Todo t={C.conf} />}</div>
+          </article>
+        ))}
+      </div>
+      <div id="liste">
+        <h2>{C.listeT}</h2>
+        <p>{C.listeC}</p>
+        <Liste lang={lang} />
+      </div>
+    </div>
+  </section>
+  <Annexes lang={lang} depuis="evenements" />
+</Base>

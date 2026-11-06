@@ -1,0 +1,16 @@
+---
+import { asset, type Lang } from '../i18n';
+import { DRAFT } from '../config';
+interface Props { video: { titre: Record<Lang, string>; src: string; poster: string }; lang: Lang; prioritaire?: boolean }
+const { video, lang, prioritaire = false } = Astro.props;
+const titre = video.titre[lang];
+---
+{video.src ? (
+  <div class="video"><video controls preload="none" playsinline poster={video.poster || undefined} src={video.src} aria-label={titre}></video></div>
+) : DRAFT ? (
+  <div class="video video-attente">
+    <img src={asset('video-attente.webp')} alt={lang === 'fr' ? 'Parapentiste en vol, image en attendant la vidéo' : 'Paraglider in flight, image until the video is ready'} width="867" height="1024" loading={prioritaire ? 'eager' : 'lazy'} decoding="async" />
+    <div class="video-rond"></div>
+    <div class="video-legende"><strong>{titre}</strong></div>
+  </div>
+) : null}

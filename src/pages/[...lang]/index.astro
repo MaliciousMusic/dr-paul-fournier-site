@@ -1,0 +1,68 @@
+---
+// The landing: who, the two calls to action and the video at first sight, then every section at a glance. No long scroll.
+import Base from '../../layouts/Base.astro';
+import VideoFond from '../../components/VideoFond.astro';
+import OuvertureImplant from '../../components/OuvertureImplant.astro';
+import NomFrappe from '../../components/NomFrappe.astro';
+import Defile from '../../components/Defile.astro';
+import { LIEUX, PRATICIEN } from '../../config';
+import { PRATIQUES } from '../../data/pratiques';
+import { CATEGORIES } from '../../data/categories';
+import { VIDEOS } from '../../data/medias';
+import { UI, href, localePaths, type Lang } from '../../i18n';
+
+export function getStaticPaths() { return localePaths(); }
+const lang = Astro.props.lang as Lang;
+const t = UI[lang];
+const v = PRATICIEN.ville;
+const C = {
+  fr: {
+    titre: `Dr Paul Fournier, chirurgien-dentiste à ${v}`,
+    desc: `Le Dr Paul Fournier est chirurgien-dentiste à ${v} : implants, régénération osseuse, dents de sagesse, chirurgie sous anesthésie générale.`,
+    nom1: 'Docteur Paul',
+    actes: ['Implants', 'Régénération osseuse', 'Reconstruction complète', 'Dents de sagesse', 'Chirurgie plastique parodontale', 'Repositionnement de la lèvre', 'Anesthésie générale', 'Impression 3D'],
+    ajuste: '--k-une: 8.96; --k-l1: 5.27',
+    voir: 'Voir',
+    lieux: 'Jaude, Brioude et la clinique, rendez-vous par téléphone.',
+  },
+  en: {
+    titre: `Dr Paul Fournier, dental surgeon in ${v}, France`,
+    desc: `Dr Paul Fournier is a dental surgeon in ${v}, France: implants, bone regeneration, full reconstruction, wisdom teeth, surgery under general anaesthesia.`,
+    nom1: 'Doctor Paul',
+    actes: ['Implants', 'Bone regeneration', 'Full reconstruction', 'Wisdom teeth', 'Periodontal plastic surgery', 'Upper lip repositioning', 'General anaesthesia', '3D printing'],
+    ajuste: '--k-une: 8.56; --k-l1: 4.87',
+    voir: 'See',
+    lieux: 'Jaude, Brioude and the clinic, appointments by phone.',
+  },
+}[lang];
+const tuile = (c: keyof typeof CATEGORIES) => ({ h: href(lang, c), nom: CATEGORIES[c].nom[lang], p: CATEGORIES[c].phrase[lang] });
+const parcours = tuile('parcours'), confreres = tuile('confreres'), medias = tuile('medias'), articles = tuile('articles'), evenements = tuile('evenements'), contact = tuile('contact');
+const ld = [{ '@type': 'WebPage', '@id': new URL(href(lang), Astro.site).href, name: C.titre, about: { '@id': `${new URL('/', Astro.site).href}#paul-fournier` }, inLanguage: lang }];
+---
+<Base lang={lang} titre={C.titre} description={C.desc} ld={ld} ouverture>
+  <OuvertureImplant lang={lang} />
+  <div class="ecran">
+  <section class="accueil">
+    <VideoFond video={VIDEOS[0]} lang={lang} />
+    <NomFrappe nom1={C.nom1} nom2="Fournier" ajuste={C.ajuste} actes={C.actes} />
+  </section>
+
+  <Defile lang={lang} />
+  </div>
+  <section>
+      <div class="bento bento-plein">
+        <div class="tuile tuile-large">
+          <h2><a href={href(lang, 'pratiques')} style="text-decoration:none">{CATEGORIES.pratiques.nom[lang]}</a></h2>
+          <ul class="liens">
+            {PRATIQUES.map((p) => <li><a href={href(lang, `pratiques/${p.slug}`)}>{p.titre[lang]}</a></li>)}
+          </ul>
+        </div>
+        <a class="tuile tuile-sombre" href={confreres.h}><h2>{confreres.nom}</h2><p>{confreres.p}</p><span class="fleche">{C.voir}</span></a>
+        <a class="tuile" href={parcours.h}><h2>{parcours.nom}</h2><p>{parcours.p}</p><span class="fleche">{C.voir}</span></a>
+        <a class="tuile" href={medias.h}><h2>{medias.nom}</h2><p>{medias.p}</p><span class="fleche">{C.voir}</span></a>
+        <a class="tuile" href={articles.h}><h2>{articles.nom}</h2><p>{articles.p}</p><span class="fleche">{C.voir}</span></a>
+        <a class="tuile" href={evenements.h}><h2>{evenements.nom}</h2><p>{evenements.p}</p><span class="fleche">{C.voir}</span></a>
+        <a class="tuile" href={contact.h}><h2>{contact.nom}</h2><p>{C.lieux}</p><span class="fleche">{C.voir}</span></a>
+      </div>
+  </section>
+</Base>

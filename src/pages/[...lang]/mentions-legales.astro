@@ -1,0 +1,41 @@
+---
+import Base from '../../layouts/Base.astro';
+import TetePage from '../../components/TetePage.astro';
+import Todo from '../../components/Todo.astro';
+import { PRATICIEN } from '../../config';
+import { localePaths, type Lang } from '../../i18n';
+export function getStaticPaths() { return localePaths(); }
+const lang = Astro.props.lang as Lang;
+const C = {
+  fr: {
+    titre: 'Mentions légales', desc: 'Mentions légales du site du Dr Paul Fournier.',
+    rows: [
+      ['Éditeur', PRATICIEN.nom], ['Statut et immatriculation', ''], ['Adresse', ''], ['Téléphone et e-mail', ''], ['TVA', ''],
+      ['Directeur de la publication', PRATICIEN.nom], ['Titre professionnel', `${PRATICIEN.titre.fr}, titre délivré en France`],
+      ['Ordre', `${PRATICIEN.ordre.fr}, conseil départemental du Puy-de-Dôme`], ['Règles professionnelles', 'Code de déontologie des chirurgiens-dentistes, articles R.4127-201 et suivants du code de la santé publique'],
+      ['RPPS', PRATICIEN.rpps], ['Hébergeur', 'Cloudflare, Inc., 101 Townsend St, San Francisco, CA 94107, États-Unis'], ['Téléphone de l’hébergeur', ''],
+    ],
+    droits: 'Textes, dessins et vidéos sont protégés. Toute reprise demande un accord écrit.',
+  },
+  en: {
+    titre: 'Legal notice', desc: 'Legal notice of Dr Paul Fournier’s website.',
+    rows: [
+      ['Publisher', PRATICIEN.nom], ['Legal form and registration', ''], ['Address', ''], ['Phone and e-mail', ''], ['VAT', ''],
+      ['Publication director', PRATICIEN.nom], ['Professional title', `${PRATICIEN.titre.en}, title awarded in France`],
+      ['Professional body', `${PRATICIEN.ordre.en}, Puy-de-Dôme departmental council`], ['Professional rules', 'French code of ethics for dental surgeons, articles R.4127-201 et seq. of the Public Health Code'],
+      ['RPPS', PRATICIEN.rpps], ['Hosting provider', 'Cloudflare, Inc., 101 Townsend St, San Francisco, CA 94107, USA'], ['Hosting provider phone', ''],
+    ],
+    droits: 'Texts, drawings and videos are protected. Any reuse requires written consent.',
+  },
+}[lang];
+---
+<Base lang={lang} titre={`${C.titre} | ${PRATICIEN.nom}`} description={C.desc} chemin="mentions-legales">
+  <TetePage lang={lang} titre={C.titre} />
+  <section class="section">
+    <div class="large etroit">
+      <table class="tableau"><tbody>{C.rows.map(([a, b]) => <tr><th scope="row">{a}</th><td>{b || <Todo />}</td></tr>)}</tbody></table>
+      <p class="note" style="margin-top:18px">{C.droits}</p>
+      <Todo t="à faire relire : conseil départemental et hébergeur à confirmer" />
+    </div>
+  </section>
+</Base>

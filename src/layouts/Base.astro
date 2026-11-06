@@ -1,0 +1,251 @@
+---
+import '../styles/global.css';
+import { DRAFT, PRATICIEN, LIEUX, adresseComplete, telIntl } from '../config';
+import { UI, asset, href, type Lang } from '../i18n';
+import { NAV, nomCat } from '../data/categories';
+import { grapheBase } from '../seo';
+import anton from '@fontsource/anton/files/anton-latin-400-normal.woff2?url';
+import Todo from '../components/Todo.astro';
+import Monogramme from '../components/Monogramme.astro';
+
+interface Props { lang: Lang; titre: string; description: string; chemin?: string; ld?: object[]; sansTraduction?: boolean; ouverture?: boolean }
+const { lang, titre, description, chemin = '', ld = [], sansTraduction = false, ouverture = false } = Astro.props;
+const t = UI[lang];
+const site = Astro.site!;
+const canon = new URL(href(lang, chemin), site).href;
+const alt = (l: Lang) => new URL(href(l, chemin), site).href;
+const autre: Lang = lang === 'fr' ? 'en' : 'fr';
+const vers = sansTraduction ? href(autre) : href(autre, chemin);
+const tel = PRATICIEN.telephone;
+const appel = tel ? `tel:${telIntl(tel)}` : href(lang, 'contact');
+const graphe = JSON.stringify({ '@context': 'https://schema.org', '@graph': [...grapheBase(site, lang), ...ld] });
+const image = new URL(asset('og.png'), site).href;
+const imageAlt = `${PRATICIEN.nom}, ${PRATICIEN.titre[lang].toLowerCase()}`;
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titre}</title>
+    <meta name="description" content={description} />
+    {DRAFT && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="canonical" href={canon} />
+    {!sansTraduction && <>
+      <link rel="alternate" hreflang="fr" href={alt('fr')} />
+      <link rel="alternate" hreflang="en" href={alt('en')} />
+      <link rel="alternate" hreflang="x-default" href={alt('fr')} />
+    </>}
+    <link rel="icon" href={asset('favicon.svg')} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={asset('apple-touch-icon.png')} />
+    <meta name="theme-color" content="#000000" />
+    <meta name="author" content="Dr Paul Fournier" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={PRATICIEN.nom} />
+    <meta property="og:title" content={titre} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canon} />
+    <meta property="og:image" content={image} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={imageAlt} />
+    <meta property="og:locale" content={lang === 'fr' ? 'fr_FR' : 'en_GB'} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image:alt" content={imageAlt} />
+    {ouverture && DRAFT && <link rel="preload" href={asset('video-attente.webp')} as="image" fetchpriority="high" />}
+    <link rel="preload" href={anton} as="font" type="font/woff2" crossorigin />
+    <script is:inline define:vars={{ anton }}>
+      // Every big title is stretched or squeezed, letter shapes included, to fill its box exactly in both directions.
+      // The words are cut into the lines that distort them least. The text stays real text in the page.
+      window.impact = (function () {
+        var racine = document.documentElement;
+        racine.classList.add('js');
+        var CIBLES = 'main h1:not(.accueil-nom), main h2, main h3, .pied-nom';
+        var POLICE = "400 100px Anton, Impact, 'Arial Narrow', sans-serif";
+        var ctx = document.createElement('canvas').getContext('2d');
+        var memo = {}, base = null, attente = [], charge = false;
+
+        // The ink of a line at 100px: where its letters really start and stop, not the box of the font
+        function encre(t) {
+          if (memo[t]) return memo[t];
+          ctx.font = POLICE;
+          var m = ctx.measureText(t.toUpperCase());
+          return (memo[t] = { g: m.actualBoundingBoxLeft, d: m.actualBoundingBoxRight, h: m.actualBoundingBoxAscent, b: m.actualBoundingBoxDescent });
+        }
+        function ligneDeBase() {
+          if (base !== null) return base;
+          var s = document.createElement('span'), p = document.createElement('i');
+          s.className = 'impact-l';
+          s.style.visibility = 'hidden';
+          s.textContent = 'H';
+          p.style.cssText = 'display:inline-block;width:0;height:0';
+          s.appendChild(p);
+          document.body.appendChild(s);
+          base = p.getBoundingClientRect().bottom - s.getBoundingClientRect().top;
+          s.remove();
+          return base;
+        }
+        function coupes(mots, k) {
+          if (k === 1) return [[mots.join(' ')]];
+          var r = [];
+          for (var i = 1; i <= mots.length - k + 1; i++) coupes(mots.slice(i), k - 1).forEach(function (c) { r.push([mots.slice(0, i).join(' ')].concat(c)); });
+          return r;
+        }
+        function choix(texte, L, H, hLigne, uneLigne) {
+          var mots = texte.split(' '), ecart = Math.max(3, Math.round((hLigne || H) * 0.02)), mieux = null, score = Infinity;
+          for (var k = 1; k <= (uneLigne ? 1 : Math.min(mots.length, 6)); k++) {
+            var total = hLigne ? k * hLigne + (k - 1) * ecart : H, h = (total - (k - 1) * ecart) / k;
+            coupes(mots, k).forEach(function (c) {
+              var s = (k - 1) * 0.02;
+              c.forEach(function (l, i) { var e = encre(l); s = Math.max(s, Math.abs(Math.log((e.g + e.d) / (e.h + e.b) / (L / h))) + (k - 1) * 0.02); });
+              if (s < score) { score = s; mieux = { lignes: c, h: h, ecart: ecart, total: total }; }
+            });
+          }
+          return mieux;
+        }
+        // Lays the text into the box. Returns the lines, for the name that types itself.
+        function pose(boite, texte, dans, uneLigne) {
+          texte = texte.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // big titles carry no accents; the page source keeps them
+          var c = getComputedStyle(boite), L = boite.clientWidth;
+          var libre = c.getPropertyValue('--libre').trim() === '1';
+          var hLigne = libre ? parseFloat(c.lineHeight) : 0;
+          var r = choix(texte, L, boite.clientHeight, hLigne, uneLigne), hote = dans || boite, B = ligneDeBase();
+          if (libre) boite.style.height = r.total + 'px';
+          hote.textContent = '';
+          return r.lignes.map(function (l, i) {
+            var e = encre(l);
+            // a line of a block: every line gets the same capitals, accents stand above them
+            if (uneLigne) { var c = encre('H'); e = { g: e.g, d: e.d, h: c.h, b: c.b }; }
+            var sx = L / (e.g + e.d), sy = r.h / (e.h + e.b), y = i * (r.h + r.ecart);
+            var s = document.createElement('span');
+            s.className = 'impact-l';
+            s.textContent = l;
+            s.style.transform = 'translate(' + (e.g * sx).toFixed(2) + 'px,' + (y - (B - e.h) * sy).toFixed(2) + 'px) scale(' + sx.toFixed(4) + ',' + sy.toFixed(4) + ')';
+            hote.appendChild(s);
+            hote.appendChild(document.createTextNode(' '));
+            return { el: s, texte: l };
+          });
+        }
+        function tout() {
+          document.querySelectorAll(CIBLES).forEach(function (el) {
+            var lien = el.children.length === 1 && el.firstElementChild.tagName === 'A' ? el.firstElementChild : null;
+            if (el.children.length && !lien && !el.querySelector('.impact-l')) return; // a title holding other marks stays as it is
+            if (!el.dataset.t) el.dataset.t = el.textContent.trim().replace(/\s+/g, ' ');
+            if (el.offsetParent !== null && el.clientWidth) pose(el, el.dataset.t, lien);
+          });
+        }
+        function pret(f) { charge ? f() : attente.push(f); }
+        function fin() {
+          memo = {}; base = null;
+          if (charge) return tout();
+          charge = true;
+          tout();
+          racine.classList.add('impact-pret');
+          attente.forEach(function (f) { f(); });
+        }
+        // Loaded by hand: the page's own font rules may not be read yet at this point
+        if (window.FontFace && document.fonts) new FontFace('Anton', 'url(' + anton + ')').load().then(function (f) { document.fonts.add(f); fin(); }, fin);
+        addEventListener('load', function () { tout(); });
+        setTimeout(function () { if (!charge) fin(); }, 1500);
+        var prevu = 0, largeur = 0, hauteur = 0;
+        addEventListener('resize', function () {
+          if (innerWidth === largeur && innerHeight === hauteur) return;
+          largeur = innerWidth; hauteur = innerHeight;
+          cancelAnimationFrame(prevu);
+          prevu = requestAnimationFrame(tout);
+        });
+        return { pose: pose, pret: pret, tout: tout };
+      })();
+    </script>
+    <script type="application/ld+json" set:html={graphe} />
+    {ouverture && (
+      <script is:inline>
+        // The opening plays once per visit, never for those who asked for less motion.
+        (function () {
+          try { if (sessionStorage.getItem('ouverture')) return; sessionStorage.setItem('ouverture', '1'); } catch (e) { return; }
+          if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+          document.documentElement.classList.add('splash');
+          // safety: whatever happens, the page never stays hidden behind the opening
+          setTimeout(function () { document.documentElement.classList.remove('splash', 'splash-descend', 'splash-nom'); }, 8000);
+        })();
+      </script>
+    )}
+  </head>
+  <body>
+    <a class="saut" href="#contenu">{t.skip}</a>
+    <header class="tete">
+      <div class="tete-haut">
+        <div class="tete-in">
+          <a class="marque" href={href(lang)}><Monogramme /><span class="marque-nom">{PRATICIEN.nom}<small class="marque-titre">{PRATICIEN.titre[lang]}</small></span></a>
+          <nav class="nav" aria-label="Navigation">
+            {NAV.map((c) => <a href={href(lang, c)} data-t={nomCat(c, lang)} aria-current={chemin.startsWith(c) ? 'page' : undefined}>{nomCat(c, lang)}</a>)}
+            <a class="langue" href={vers} hreflang={autre} data-t={autre.toUpperCase()}>{autre.toUpperCase()}</a>
+          </nav>
+          <details class="mobile">
+            <summary class="burger">{t.menu}<span class="barres" aria-hidden="true"><i></i><i></i><i></i></span></summary>
+            <div class="mobile-in">
+              {NAV.map((c, i) => <a href={href(lang, c)} style={`--i:${i}`}>{nomCat(c, lang)}</a>)}
+              <a href={vers} hreflang={autre} style={`--i:${NAV.length}`}>{lang === 'fr' ? 'English' : 'Français'}</a>
+            </div>
+          </details>
+        </div>
+      </div>
+      <div class="sous-tete">
+        <a class="btn" href={appel}><span class="cta-in"><svg class="cta-tel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h3.5L11 8 8.5 9.5c1 2.5 3.5 5 6 6L16 13l5 1.500V18c0 1.500-1 3-3 3C10 21 3 14 3 6c0-1.500 1.500-3 3-3Z" /></svg>{t.appelerCourt}</span></a>
+        <a class="btn" href={href(lang, 'confreres')}><span class="cta-in"><svg class="cta-tel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h3.5L11 8 8.5 9.5c1 2.5 3.5 5 6 6L16 13l5 1.500V18c0 1.500-1 3-3 3C10 21 3 14 3 6c0-1.500 1.500-3 3-3Z" /></svg>{t.adresser}</span></a>
+      </div>
+    </header>
+    <script>
+      // Menu: press feedback, folding animation on close, and it closes with Escape or a click elsewhere.
+      const menu = document.querySelector<HTMLDetailsElement>('details.mobile');
+      const bouton = menu?.querySelector('summary');
+      const panneau = menu?.querySelector('.mobile-in');
+      if (menu && bouton && panneau) {
+        const fermer = () => {
+          if (!menu.open || menu.classList.contains('ferme')) return;
+          const fin = () => { menu.classList.remove('ferme'); menu.open = false; };
+          if (matchMedia('(prefers-reduced-motion: reduce)').matches) return fin();
+          menu.classList.add('ferme');
+          panneau.addEventListener('animationend', function suite(e) {
+            if (e.target !== panneau) return;
+            panneau.removeEventListener('animationend', suite);
+            fin();
+          });
+        };
+        bouton.addEventListener('click', (e) => {
+          bouton.classList.remove('presse');
+          void bouton.offsetWidth;
+          bouton.classList.add('presse');
+          if (menu.open) { e.preventDefault(); fermer(); }
+        });
+        bouton.addEventListener('animationend', () => bouton.classList.remove('presse'));
+        document.addEventListener('click', (e) => { if (!menu.contains(e.target as Node)) fermer(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.open) { fermer(); bouton.focus(); } });
+      }
+    </script>
+    <main id="contenu"><slot /></main>
+    <footer class="pied topo">
+      <div class="regle" aria-hidden="true"></div>
+      <div class="pied-grille">
+          <div>
+            <strong>{PRATICIEN.nom}</strong><br />
+            {PRATICIEN.titre[lang]}, {PRATICIEN.ville}<br />
+            {PRATICIEN.orientation[lang]}<br />
+            {PRATICIEN.ordre[lang]}<br />
+            RPPS {PRATICIEN.rpps || <Todo />}
+          </div>
+          <ul>
+            {LIEUX.map((l) => <li>{l.nom[lang]} : {adresseComplete(l) || <Todo />}{l.telephone && <><br /><a href={`tel:${telIntl(l.telephone)}`}>{l.telephone}</a></>}</li>)}
+          </ul>
+          <ul>
+            <li><a href={href(lang, 'mentions-legales')}>{t.mentions}</a></li>
+            <li><a href={href(lang, 'confidentialite')}>{t.confidentialite}</a></li>
+          </ul>
+          <div class="pied-geo">45°46′ N<br />3°05′ E<br />{PRATICIEN.ville}</div>
+      </div>
+      <p class="pied-nom">{PRATICIEN.nom}</p>
+      <p class="pied-bas">{t.accesSoins}</p>
+    </footer>
+    <script is:inline>impact.tout();</script>
+  </body>
+</html>

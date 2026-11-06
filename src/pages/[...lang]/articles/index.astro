@@ -1,0 +1,51 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import TetePage from '../../../components/TetePage.astro';
+import Annexes from '../../../components/Annexes.astro';
+import Todo from '../../../components/Todo.astro';
+import { DRAFT, PRATICIEN } from '../../../config';
+import { PRESSE } from '../../../data/presse';
+import { fil, idPersonne } from '../../../seo';
+import { UI, href, localePaths, type Lang } from '../../../i18n';
+export function getStaticPaths() { return localePaths(); }
+const lang = Astro.props.lang as Lang;
+const site = Astro.site!;
+const C = {
+  fr: { titre: 'Articles et presse', seo: `Articles et presse, Dr Paul Fournier, ${PRATICIEN.ville}`, chapo: 'Comprendre avant de décider, et ce qui a été dit ailleurs.', desc: `Les articles du Dr Paul Fournier, chirurgien-dentiste à ${PRATICIEN.ville}, et ses passages dans la presse et les podcasts.`, art: 'Articles', presse: 'Presse et podcasts', voir: 'Voir', aFaire: 'articles à écrire', pl: 'brouillon' },
+  en: { titre: 'Articles and press', seo: `Articles and press, Dr Paul Fournier, ${PRATICIEN.ville}`, chapo: 'Understand before deciding, and what has been said elsewhere.', desc: `Articles by Dr Paul Fournier, dental surgeon in ${PRATICIEN.ville}, France, and his appearances in the press and podcasts.`, art: 'Articles', presse: 'Press and podcasts', voir: 'See', aFaire: 'articles to write', pl: 'draft' },
+}[lang];
+const articles = (await getCollection('articles')).filter((a) => a.data.langue === lang && (DRAFT || !a.data.brouillon));
+const fmt = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+const ld = [
+  ...PRESSE.filter((p) => p.podcast).map((p) => ({ '@type': 'PodcastEpisode', name: p.titre, url: p.lien, datePublished: p.date, partOfSeries: { '@type': 'PodcastSeries', name: p.media }, actor: { '@id': idPersonne(site) } })),
+  fil(site, lang, [{ nom: UI[lang].accueil, chemin: '' }, { nom: C.titre, chemin: 'articles' }]),
+];
+---
+<Base lang={lang} titre={C.seo} description={C.desc} chemin="articles" ld={ld}>
+  <TetePage lang={lang} titre={C.titre} chapo={C.chapo} />
+  <section class="section">
+    <div class="large split">
+      <div>
+        <h2>{C.art}</h2>
+        {articles.map((a) => (
+          <a class="ligne-media" href={href(lang, `articles/${a.id}`)} style="text-decoration:none">
+            <div><strong>{a.data.titre}</strong> {a.data.brouillon && <Todo t={C.pl} />}<br /><span class="note">{a.data.description}</span></div>
+          </a>
+        ))}
+        <Todo t={C.aFaire} />
+      </div>
+      <div>
+        <h2>{C.presse}</h2>
+        {PRESSE.map((p) => (
+          <div class="ligne-media">
+            <div><strong>{p.titre}</strong><br /><span class="note">{p.type[lang]}, {fmt.format(new Date(p.date))}</span></div>
+            <a class="btn btn-contour" href={p.lien} rel="noopener">{C.voir}</a>
+          </div>
+        ))}
+        <Todo t="autres passages presse" />
+      </div>
+    </div>
+  </section>
+  <Annexes lang={lang} depuis="articles" />
+</Base>

@@ -1,0 +1,279 @@
+---
+// Opening, first visit only, white on black: the screw turns into its cavity, the abutment settles, the crown screws onto it.
+// Every line of the drawing then unfolds like a thread, left and right, into one horizontal line,
+// and the screen splits in two along it to reveal the site. Own drawing.
+// Without JavaScript or with reduced motion, none of this exists and the page shows normally.
+import { type Lang } from '../i18n';
+const { lang } = Astro.props as { lang: Lang };
+const passer = lang === 'fr' ? 'Passer' : 'Skip';
+const trait = (d: number, t: number) => `--d:${d}s;--t:${t}s`; // start and duration of the stroke, in seconds
+---
+<div id="ouverture" class="ouv" aria-hidden="true">
+  <div class="ouv-volet ouv-haut"></div>
+  <div class="ouv-volet ouv-bas"></div>
+  <svg class="ouv-dessin" viewBox="-10 20 640 560" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <g>
+      <path class="t" pathLength="1" style={trait(0.1, 0.6)} d="M-267 346C-235 345 -210 347 -187 353C-158 361 -125 376 -94 376C-65 376 -40 360 -13 357C2 355 16 347 28 346C58 340 86 343 100 350" />
+      <path class="t" pathLength="1" style={trait(0.1, 0.6)} d="M104 378C94 424 58 452 18 446" />
+      <path class="t" pathLength="1" style={trait(0.1, 0.6)} d="M526 340C548 354 572 358 596 352C616 347 634 339 652 330C664 323 675 316 686 311C702 304 718 301 734 300C752 299 768 304 785 306C805 309 822 313 842 312C868 308 890 297 918 296C945 296 975 308 1003 318" />
+      <path class="t" pathLength="1" style={trait(0.2, 0.4)} d="M214 340C235 347 255 352 270 354" />
+      <path class="t" pathLength="1" style={trait(0.2, 0.4)} d="M350 354C365 352 385 347 408 340" />
+      <path class="t" pathLength="1" style={trait(0.35, 0.4)} stroke-width="1.5" d="M270 354C270 420 288 506 310 522C332 506 350 420 350 354" />
+      <path class="t" pathLength="1" fill="#000" style={trait(0.1, 0.7)} d="M96 300C92 262 112 236 150 232C176 229 204 236 214 262C222 286 212 320 206 350C196 405 180 470 168 520C164 534 158 536 154 522C140 470 122 400 108 350C102 332 98 318 96 300Z" />
+      <path class="t" pathLength="1" style={trait(0.5, 0.3)} d="M118 256C128 256 138 258 146 265C151 269 155 274 158 274C162 274 168 267 174 263C178 260 182 258 186 258" />
+      <path class="t" pathLength="1" fill="#000" style={trait(0.1, 0.7)} d="M402 270C400 236 424 208 458 206C478 205 488 214 500 214C516 214 540 232 542 270C544 300 532 326 524 350C516 390 510 430 500 470C496 486 488 488 484 472C480 440 476 410 470 395C464 410 458 450 450 490C446 504 438 502 434 488C426 440 418 390 410 345C406 322 402 296 402 270Z" />
+      <path class="t" pathLength="1" style={trait(0.5, 0.3)} d="M430 239C434 236 438 235 442 236C449 238 454 243 458 248C461 252 463 254 466 254C469 254 472 250 476 247C482 243 490 238 497 237C501 236 505 236 510 237" />
+    </g>
+    <g id="ouv-vis" visibility="hidden">
+      <path d="M276 352V372C276 382 344 382 344 372V352" />
+      <ellipse cx="310" cy="352" rx="34" ry="9" />
+      <path id="ouv-six" stroke-width="1.8" />
+      <path id="ouv-flancs" />
+      <path id="ouv-spires" />
+      <path id="ouv-gorges" stroke-width="1.4" />
+    </g>
+    <g class="ouv-pilier"><g transform="translate(0 28)">
+      <path class="t" pathLength="1" fill="#000" style={trait(2.05, 0.25)} d="M292 314V336C292 342 328 342 328 336V314" />
+      <path class="t" pathLength="1" fill="#000" style={trait(2.05, 0.25)} d="M274 292V304C274 318 346 318 346 304V292" />
+      <path class="t" pathLength="1" fill="#000" style={trait(2.05, 0.25)} d="M288 240L276 290C282 300 338 300 344 290L332 240" />
+      <ellipse class="t" pathLength="1" style={trait(2.05, 0.25)} cx="310" cy="292" rx="36" ry="10" />
+      <ellipse class="t" pathLength="1" fill="#000" style={trait(2.05, 0.25)} cx="310" cy="240" rx="22" ry="7" />
+      <ellipse class="t" pathLength="1" style={trait(2.12, 0.18)} cx="310" cy="240" rx="10" ry="3" />
+    </g></g>
+    <g id="ouv-couronne" visibility="hidden">
+      <path id="ouv-cou" fill="#000" />
+      <path id="ouv-sillon" />
+      <path id="ouv-reflets" stroke-width="1.4" />
+    </g>
+  </svg>
+  <span class="ouv-passer">{passer}</span>
+</div>
+
+<script is:inline>
+  (function () {
+    var racine = document.documentElement, o = document.getElementById('ouverture');
+    if (!o) return;
+    if (!racine.classList.contains('splash')) { o.remove(); return; }
+
+    // Timeline, in seconds
+    var T = { visDebut: 0.7, visFin: 2, couDebut: 2.45, couFin: 3.55, delie: 3.75, delieDuree: 0.95, ouvre: 4.8, descend: 4.95, nom: 5.4, fin: 5.7 };
+    var dessin = o.querySelector('.ouv-dessin');
+    var ns = 'http://www.w3.org/2000/svg';
+    var fini = false, raf = 0, t0 = 0, fil = null;
+    var borne = function (u) { return u < 0 ? 0 : u > 1 ? 1 : u; };
+    var el = function (id) { return document.getElementById(id); };
+
+    // --- The screw: a real right-hand helix, projected, turning clockwise as seen from above, so it visibly screws in
+    var CX = 310, PAS = 18, HAUT = 380, BAS = 506;
+    var rayon = function (y) { return 30 - (y - 384) * 0.147; };
+    function vis(phi) {
+      var f = ((phi / (2 * Math.PI)) % 1 + 1) % 1, d = '', k, a, y, plume, x;
+      // thread: the front half of each turn; it climbs the body as the screw turns
+      for (k = -1; k < 9; k++) {
+        plume = false;
+        for (a = -Math.PI / 2; a <= Math.PI / 2 + 0.01; a += Math.PI / 10) {
+          y = 384 + PAS * (k - a / (2 * Math.PI) + 0.5 - f);
+          if (y < HAUT || y > BAS) { plume = false; continue; }
+          x = CX + rayon(y) * Math.sin(a);
+          d += (plume ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+          plume = true;
+        }
+      }
+      el('ouv-spires').setAttribute('d', d);
+      // ridged sides: each ridge meets the end of a thread line
+      var dent = function (v) { v = ((v % 1) + 1) % 1; return 0.82 + 0.18 * (v < 0.5 ? v * 2 : 2 - v * 2); };
+      var g = '', dr = '';
+      for (y = HAUT; y <= BAS; y += 3) {
+        g += (g ? 'L' : 'M') + (CX - rayon(y) * dent((y - 384) / PAS + f - 0.25)).toFixed(1) + ' ' + y;
+        dr += (dr ? 'L' : 'M') + (CX + rayon(y) * dent((y - 384) / PAS + f + 0.25)).toFixed(1) + ' ' + y;
+      }
+      var bas = rayon(BAS);
+      el('ouv-flancs').setAttribute('d', g + 'Q' + CX + ' ' + (BAS + 18) + ' ' + (CX + bas * 0.9).toFixed(1) + ' ' + BAS + ' ' + dr);
+      // cutting grooves: they cross the face and disappear behind
+      var c = '';
+      for (k = 0; k < 3; k++) {
+        a = phi + k * 2 * Math.PI / 3;
+        if (Math.cos(a) < 0.08) continue;
+        for (y = 386; y <= 498; y += 14) c += (y === 386 ? 'M' : 'L') + (CX - rayon(y) * 0.82 * Math.sin(a)).toFixed(1) + ' ' + y;
+      }
+      el('ouv-gorges').setAttribute('d', c);
+      // hexagon in the head: the clearest sign of rotation, seen from above
+      var s = '';
+      for (k = 0; k < 6; k++) {
+        a = phi + k * Math.PI / 3;
+        s += (k ? 'L' : 'M') + (CX + 20 * Math.cos(a)).toFixed(1) + ' ' + (352 + 5.4 * Math.sin(a)).toFixed(1);
+      }
+      el('ouv-six').setAttribute('d', s + 'Z');
+    }
+
+    // --- The crown: same turn as the screw, its cusps travel over the back and its groove across the front.
+    // It eases into the final drawing (m = 1) as it seats.
+    var COU_HAUT = 'M236 250C232 214 258 198 282 200C296 201 302 208 312 208C322 208 330 198 346 198C372 198 390 216 386 252';
+    var COU_BAS = 'C384 280 374 318 360 332C340 344 282 344 262 332C248 318 238 280 236 250Z';
+    var SILLON = 'M288 230C298 228 304 226 312 236C320 228 332 226 342 224';
+    function echantillon(d, n) {
+      var p = document.createElementNS(ns, 'path'), out = [], L, i, q;
+      p.setAttribute('d', d);
+      L = p.getTotalLength();
+      for (i = 0; i <= n; i++) { q = p.getPointAtLength(L * i / n); out.push([q.x, q.y]); }
+      return out;
+    }
+    var finHaut = echantillon(COU_HAUT, 48), finSillon = echantillon(SILLON, 24);
+    function couronne(phi, m) {
+      var CC = 311, d = '', s = '', r = '', k, j, a, x, y;
+      for (k = 0; k <= 48; k++) {
+        a = Math.PI * (1 + k / 48); // left, over the back, to the right
+        x = CC + 75 * Math.cos(a);
+        y = 250 - 46 * Math.sqrt(1 - Math.pow(Math.cos(a), 4)) + 9 * Math.abs(Math.sin(a)) * Math.cos(4 * (a - phi));
+        d += (k ? 'L' : 'M') + (x + (finHaut[k][0] - x) * m).toFixed(1) + ' ' + (y + (finHaut[k][1] - y) * m).toFixed(1);
+      }
+      el('ouv-cou').setAttribute('d', d + COU_BAS);
+      for (k = 0; k <= 24; k++) {
+        a = Math.PI * (1 - k / 24); // left, across the front, to the right
+        x = 315 + 34 * Math.cos(a);
+        y = 228 + 6 * Math.sin(a) + 5 * Math.cos(4 * (a - phi));
+        s += (k ? 'L' : 'M') + (x + (finSillon[k][0] - x) * m).toFixed(1) + ' ' + (y + (finSillon[k][1] - y) * m).toFixed(1);
+      }
+      el('ouv-sillon').setAttribute('d', s);
+      // grooves on the body, gone once it is seated
+      if (m < 1) for (j = 0; j < 3; j++) {
+        a = phi + j * 2 * Math.PI / 3;
+        if (Math.cos(a) < 0.08) continue;
+        for (y = 258; y <= 328; y += 10) r += (y === 258 ? 'M' : 'L') + (CC - (75 - 25 * Math.pow((y - 250) / 82, 2.2)) * Math.sin(a)).toFixed(1) + ' ' + y;
+      }
+      el('ouv-reflets').setAttribute('d', r);
+      el('ouv-reflets').setAttribute('stroke-opacity', (1 - m).toFixed(2));
+    }
+
+    // --- The thread: every stroke becomes a stretch of one horizontal line
+    function prepareFil() {
+      var L = o.clientWidth, H = o.clientHeight, base = dessin.getBoundingClientRect().width / 640 * 2.6;
+      var traits = [];
+      var feuille = document.createElementNS(ns, 'svg');
+      feuille.setAttribute('class', 'ouv-feuille');
+      feuille.setAttribute('viewBox', '0 0 ' + L + ' ' + H);
+      dessin.querySelectorAll('path,ellipse').forEach(function (e) {
+        var long = e.getTotalLength ? e.getTotalLength() : 0;
+        if (long < 2) return;
+        var m = e.getScreenCTM(), n = Math.max(6, Math.ceil(long / 5)), pts = [], i, p;
+        for (i = 0; i <= n; i++) {
+          p = e.getPointAtLength(long * i / n);
+          pts.push([m.a * p.x + m.c * p.y + m.e, m.b * p.x + m.d * p.y + m.f]);
+        }
+        if (pts[0][0] > pts[n][0]) pts.reverse();
+        var el = document.createElementNS(ns, 'path');
+        el.setAttribute('fill', e.getAttribute('fill') || 'none'); // a black shape keeps hiding what is behind it until it flattens
+        el.setAttribute('stroke', '#fff'); el.setAttribute('stroke-linecap', 'round'); el.setAttribute('stroke-linejoin', 'round');
+        feuille.appendChild(el);
+        traits.push({ el: el, pts: pts, long: long, mx: pts.reduce(function (s, q) { return s + q[0]; }, 0) / pts.length });
+      });
+      var total = traits.reduce(function (s, a) { return s + a.long; }, 0), x = -4, largeur = L + 8;
+      traits.slice().sort(function (a, b) { return a.mx - b.mx; }).forEach(function (a) {
+        var w = largeur * a.long / total, n = a.pts.length - 1, milieu = x + w / 2, pas = a.long / n * dessin.getBoundingClientRect().width / 640;
+        a.cible = a.pts.map(function (_, i) { return [x + w * i / n, H / 2]; });
+        a.saut = a.pts.map(function (q, i) { return i && Math.hypot(q[0] - a.pts[i - 1][0], q[1] - a.pts[i - 1][1]) > pas * 1.6 + 2; });
+        a.gauche = milieu < L / 2;
+        // the unfolding starts in the centre and runs out to both edges
+        a.retard = Math.abs(milieu - L / 2) / (L / 2) * 0.35;
+        x += w;
+      });
+      dessin.style.display = 'none';
+      o.appendChild(feuille);
+      fil = { traits: traits, feuille: feuille, base: base };
+    }
+    function dessineFil(t) {
+      var u = (t - T.delie) / T.delieDuree;
+      fil.traits.forEach(function (a) {
+        var v = borne((u - a.retard) / 0.65), n = a.pts.length - 1, d = '', i, e, w;
+        for (i = 0; i <= n; i++) {
+          // the end nearest the edge of the screen leads and the rest follows, so the stroke pulls taut like a thread
+          w = borne(v * 1.5 - 0.5 * (a.gauche ? i / n : 1 - i / n));
+          e = w < 0.5 ? 4 * w * w * w : 1 - Math.pow(-2 * w + 2, 3) / 2;
+          d += (i && !a.saut[i] ? 'L' : 'M') + (a.pts[i][0] + (a.cible[i][0] - a.pts[i][0]) * e).toFixed(1) + ' ' + (a.pts[i][1] + (a.cible[i][1] - a.pts[i][1]) * e).toFixed(1);
+        }
+        a.el.setAttribute('d', d);
+        a.el.setAttribute('stroke-width', (fil.base + (2 - fil.base) * v).toFixed(2));
+      });
+    }
+
+    function fin() {
+      if (fini) return;
+      fini = true;
+      cancelAnimationFrame(raf);
+      racine.classList.remove('splash', 'splash-descend', 'splash-nom');
+      o.remove();
+    }
+
+    var ouvert = false, pose = false, coiffe = false, tendu = false;
+    function image(now) {
+      var t = (now - t0) / 1000;
+      // the screw comes down turning, and slows as it seats
+      if (t >= T.visDebut && !pose) {
+        var u = borne((t - T.visDebut) / (T.visFin - T.visDebut)), e = 1 - Math.pow(1 - u, 2.2);
+        var g = el('ouv-vis');
+        g.setAttribute('visibility', 'visible');
+        g.setAttribute('transform', 'translate(0 ' + (-170 * (1 - e)).toFixed(1) + ')');
+        vis(e * 2 * Math.PI * 5.5);
+        pose = u === 1;
+      }
+      // the crown comes down from above, turning, and seats on the abutment
+      if (t >= T.couDebut && !coiffe) {
+        var v = borne((t - T.couDebut) / (T.couFin - T.couDebut)), f = 1 - Math.pow(1 - v, 2.2), c = el('ouv-couronne'), w = borne((v - 0.8) / 0.2);
+        c.setAttribute('visibility', 'visible');
+        c.setAttribute('opacity', borne(v / 0.12).toFixed(2));
+        c.setAttribute('transform', 'translate(0 ' + (-170 * (1 - f)).toFixed(1) + ')');
+        couronne(f * 2 * Math.PI * 3.5, w * w * (3 - 2 * w));
+        coiffe = v === 1;
+      }
+      if (t >= T.delie) {
+        if (!fil) prepareFil();
+        if (!tendu) { dessineFil(t); tendu = t >= T.delie + T.delieDuree; } // a late frame still ends on the straight line
+      }
+      if (t >= T.ouvre && !ouvert) {
+        ouvert = true;
+        o.classList.add('ouvre');
+        if (fil) fil.feuille.remove();
+        var video = document.getElementById('video-intro');
+        if (video) video.currentTime = 0;
+      }
+      if (t >= T.descend) racine.classList.add('splash-descend');
+      if (t >= T.nom) racine.classList.add('splash-nom');
+      if (t >= T.fin) return fin();
+      raf = requestAnimationFrame(image);
+    }
+    o.addEventListener('click', fin);
+    addEventListener('keydown', fin, { once: true });
+    requestAnimationFrame(function (now) { t0 = now; o.classList.add('joue'); raf = requestAnimationFrame(image); });
+  })();
+</script>
+
+<style is:global>
+  .ouv { display: none; }
+  html.splash { overflow: hidden; }
+  html.splash .ouv { display: grid; place-items: center; position: fixed; inset: 0; z-index: 25; cursor: pointer; overflow: hidden; }
+  /* two black shutters meeting on the centre line; each carries half of the line away */
+  .ouv-volet { position: absolute; left: 0; right: 0; height: 50%; background: #000; transition: transform 0.62s cubic-bezier(0.76, 0, 0.24, 1); }
+  .ouv-haut { top: 0; border-bottom: 1px solid transparent; }
+  .ouv-bas { bottom: 0; border-top: 1px solid transparent; }
+  .ouv.ouvre .ouv-volet { border-color: #fff; }
+  .ouv.ouvre .ouv-haut { transform: translateY(-101%); }
+  .ouv.ouvre .ouv-bas { transform: translateY(101%); }
+  .ouv-feuille { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .ouv-dessin { position: relative; width: min(74svh, 88vw); height: auto; overflow: visible; }
+  .ouv.joue .ouv-dessin { animation: ouv-pose 0.2s ease-out 3.5s; }
+  @keyframes ouv-pose { 50% { transform: scale(1.012); } }
+  .ouv-dessin .t { stroke-dasharray: 1 1.1; stroke-dashoffset: 1.02; }
+  .ouv.joue .ouv-dessin .t { animation: ouv-trace var(--t) ease-out var(--d) forwards; }
+  @keyframes ouv-trace { to { stroke-dashoffset: 0; } }
+  .ouv-pilier { visibility: hidden; transform: translateY(-110px); }
+  .ouv.joue .ouv-pilier { animation: ouv-pilier 0.35s cubic-bezier(0.4, 0, 0.8, 0.6) 2.05s forwards; }
+  @keyframes ouv-pilier { from, to { visibility: visible; } to { transform: none; } }
+  .ouv-passer { position: absolute; right: 16px; bottom: 12px; color: rgba(255, 255, 255, 0.6); font-size: 0.78rem; transition: opacity 0.2s; }
+  .ouv.ouvre .ouv-passer { opacity: 0; }
+  /* the header eases down */
+  html.splash .tete { transform: translateY(-100%); }
+  html.splash-descend .tete { transform: none; transition: transform 0.7s cubic-bezier(0.16, 0.84, 0.3, 1); }
+  /* the real name stays out of sight until the typing starts (NomFrappe) */
+  html.splash .accueil-nom { visibility: hidden; }
+  html.splash-nom .accueil-nom { visibility: visible; }
+</style>

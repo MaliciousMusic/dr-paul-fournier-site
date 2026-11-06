@@ -1,0 +1,42 @@
+---
+// Mailing list for courses and events. Explicit opt-in, nothing pre-ticked, practitioners only.
+import { asset, href, type Lang } from '../i18n';
+const DEMO = import.meta.env.PUBLIC_DEMO === '1';
+const { lang } = Astro.props as { lang: Lang };
+const T = {
+  fr: {
+    email: 'Votre adresse e-mail', profil: 'Vous êtes', choisir: 'Choisir',
+    profils: ['Chirurgien-dentiste', 'Médecin', 'Interne ou étudiant', 'Assistant(e) dentaire', 'Autre professionnel de santé'],
+    accord: "J'accepte de recevoir les annonces de formations et d'événements du Dr Fournier. Je peux me désinscrire à tout moment.",
+    envoyer: "M'inscrire", merci: 'Merci, votre inscription est bien enregistrée.', conf: 'Comment sont utilisées vos données',
+  },
+  en: {
+    email: 'Your e-mail address', profil: 'You are', choisir: 'Choose',
+    profils: ['Dental surgeon', 'Physician', 'Resident or student', 'Dental assistant', 'Other health professional'],
+    accord: 'I agree to receive announcements of courses and events from Dr Fournier. I can unsubscribe at any time.',
+    envoyer: 'Sign up', merci: 'Thank you, your subscription has been recorded.', conf: 'How your data is used',
+  },
+}[lang];
+---
+<form class="formulaire" method="post" action={asset('api/liste')}>
+  <input type="hidden" name="langue" value={lang} />
+  <label>{T.email}<input type="email" name="email" required autocomplete="email" /></label>
+  <label>{T.profil}
+    <select name="profil" required>
+      <option value="">{T.choisir}</option>
+      {T.profils.map((p) => <option>{p}</option>)}
+    </select>
+  </label>
+  <div class="pot" aria-hidden="true"><label>Site<input name="site" tabindex="-1" autocomplete="off" /></label></div>
+  <label class="accord"><input type="checkbox" name="accord" required /><span>{T.accord}</span></label>
+  <div><button class="btn btn-plein" type="submit" disabled={DEMO}>{T.envoyer}</button></div>
+  {DEMO && <p class="note">{lang === 'fr' ? 'Démonstration : l’inscription est désactivée.' : 'Demo: sign-up is turned off.'}</p>}
+  <p class="note"><a href={href(lang, 'confidentialite')}>{T.conf}</a></p>
+  <p class="merci" id="merci" hidden>{T.merci}</p>
+</form>
+<script>
+  if (new URLSearchParams(location.search).has('inscrit')) {
+    const m = document.getElementById('merci');
+    if (m) { m.hidden = false; m.scrollIntoView({ block: 'center' }); }
+  }
+</script>

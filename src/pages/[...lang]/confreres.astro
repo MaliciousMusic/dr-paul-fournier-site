@@ -1,0 +1,59 @@
+---
+import Base from '../../layouts/Base.astro';
+import TetePage from '../../components/TetePage.astro';
+import Annexes from '../../components/Annexes.astro';
+import Todo from '../../components/Todo.astro';
+import { PRATICIEN, SHOW_PEER_WORDS } from '../../config';
+import { fil } from '../../seo';
+import { UI, localePaths, type Lang } from '../../i18n';
+export function getStaticPaths() { return localePaths(); }
+const lang = Astro.props.lang as Lang;
+const t = UI[lang];
+const C = {
+  fr: {
+    seo: `Adresser un patient au Dr Paul Fournier, ${PRATICIEN.ville}`, desc: `Chirurgiens-dentistes et médecins : adressez un patient au Dr Paul Fournier à ${PRATICIEN.ville}, pour les situations concernées, avec un contact direct par e-mail.`,
+    chapo: 'Un cas précis à nous confier ? Vous écrivez, le Dr Fournier vous répond directement.', sur: 'Pour les praticiens',
+    casT: 'Les situations où nous pouvons vous aider',
+    cas: ['Manque d’os avant la pose d’un implant', 'Reconstruction complète d’une ou deux arcades', 'Dents de sagesse difficiles', 'Chirurgie plastique parodontale', 'Patients très anxieux, chirurgie sous anesthésie générale à la clinique'],
+    casNote: 'liste et critères à préciser avec Paul',
+    commentT: 'Comment ça se passe',
+    comment: ['Vous écrivez au Dr Fournier en décrivant le cas', 'Il vous répond et organise la prise en charge', 'Votre patient vous revient, avec un compte rendu'],
+    secret: 'Pas de nom ni de document identifiant le patient dans un e-mail classique. Pour transmettre un dossier, passez par une messagerie sécurisée de santé.',
+    ecrire: 'Écrire au Dr Fournier', sujet: 'Adressage d’un patient',
+  },
+  en: {
+    seo: `Refer a patient to Dr Paul Fournier, ${PRATICIEN.ville}`, desc: `Dentists and physicians: refer a patient to Dr Paul Fournier in ${PRATICIEN.ville}, France, for suitable cases, with direct contact by e-mail.`,
+    chapo: 'Have a specific case to refer? Write in and Dr Fournier will answer you directly.', sur: 'For practitioners',
+    casT: 'Where we can help',
+    cas: ['Insufficient bone before implant placement', 'Full reconstruction of one or both arches', 'Difficult wisdom teeth', 'Periodontal plastic surgery', 'Very anxious patients, surgery under general anaesthesia at the clinic'],
+    casNote: 'list and criteria to be specified with Paul',
+    commentT: 'How it works',
+    comment: ['You write to Dr Fournier describing the case', 'He answers and arranges the treatment', 'Your patient returns to you, with a report'],
+    secret: 'No patient name or identifying document in a regular e-mail. To send a file, use a secure health messaging service.',
+    ecrire: 'Write to Dr Fournier', sujet: 'Patient referral',
+  },
+}[lang];
+const mail = PRATICIEN.email ? `mailto:${PRATICIEN.email}?subject=${encodeURIComponent(C.sujet)}` : '#';
+const ld = [fil(Astro.site!, lang, [{ nom: t.accueil, chemin: '' }, { nom: t.adresser, chemin: 'confreres' }])];
+---
+<Base lang={lang} titre={C.seo} description={C.desc} chemin="confreres" ld={ld}>
+  <TetePage lang={lang} titre={t.adresser} chapo={C.chapo} sur={C.sur}>
+    <div class="actions"><a class="btn btn-plein" href={mail}>{C.ecrire}</a> {!PRATICIEN.email && <Todo t="adresse e-mail" />}</div>
+  </TetePage>
+  <section class="section">
+    <div class="large split">
+      <div>
+        <h2>{C.casT}</h2>
+        <ul class="etapes">{C.cas.map((c) => <li>{c}</li>)}</ul>
+        <Todo t={C.casNote} />
+      </div>
+      <div>
+        <h2>{C.commentT}</h2>
+        <ol class="etapes">{C.comment.map((c) => <li>{c}</li>)}</ol>
+        <p class="note" style="margin-top:12px">{C.secret}</p>
+      </div>
+    </div>
+  </section>
+  {SHOW_PEER_WORDS && <section class="section"><div class="large"></div></section>}
+  <Annexes lang={lang} depuis="confreres" />
+</Base>

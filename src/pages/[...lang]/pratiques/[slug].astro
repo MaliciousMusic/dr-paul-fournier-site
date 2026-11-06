@@ -1,0 +1,60 @@
+---
+import Base from '../../../layouts/Base.astro';
+import TetePage from '../../../components/TetePage.astro';
+import Annexes from '../../../components/Annexes.astro';
+import VideoSlot from '../../../components/VideoSlot.astro';
+import Todo from '../../../components/Todo.astro';
+import { PRATIQUES } from '../../../data/pratiques';
+import { PRATICIEN } from '../../../config';
+import { fil, idPersonne } from '../../../seo';
+import { UI, href, localePaths, type Lang } from '../../../i18n';
+
+export function getStaticPaths() {
+  return localePaths().flatMap((l) =>
+    PRATIQUES.map((p) => ({ params: { lang: l.params.lang, slug: p.slug }, props: { lang: l.props.lang, p } })),
+  );
+}
+const { lang, p } = Astro.props as { lang: Lang; p: (typeof PRATIQUES)[number] };
+const t = UI[lang];
+const site = Astro.site!;
+const v = PRATICIEN.ville;
+const C = {
+  fr: { a: 'à', pourQui: 'Pour qui ?', etapes: 'Comment ça se passe', questions: 'Les questions qu’on nous pose', valider: 'à rédiger avec Paul', q: 'trois à cinq questions', parent: 'Pratiques', par: 'Dr Paul Fournier, chirurgien-dentiste' },
+  en: { a: 'in', pourQui: 'Who is it for?', etapes: 'How it works', questions: 'Frequently asked questions', valider: 'to write with Paul', q: 'three to five questions', parent: 'Treatments', par: 'Dr Paul Fournier, dental surgeon' },
+}[lang];
+const titreSeo = `${p.seo[lang]} ${C.a} ${v} | Dr Fournier`;
+const description = `${p.court[lang]} ${C.par} ${C.a} ${v}.`;
+const video = { titre: p.titre, src: '', poster: '' };
+const liees = p.liees.map((s) => PRATIQUES.find((x) => x.slug === s)!).map((x) => ({ titre: x.titre[lang], phrase: x.court[lang], chemin: `pratiques/${x.slug}` }));
+const chemin = `pratiques/${p.slug}`;
+const ld: object[] = [
+  {
+    '@type': 'MedicalWebPage', name: p.seo[lang], inLanguage: lang, description,
+    about: { '@type': 'MedicalProcedure', name: p.seo[lang] },
+    reviewedBy: { '@id': idPersonne(site) }, author: { '@id': idPersonne(site) },
+  },
+  fil(site, lang, [{ nom: t.accueil, chemin: '' }, { nom: C.parent, chemin: 'pratiques' }, { nom: p.titre[lang], chemin }]),
+];
+if (p.faq.length) ld.push({ '@type': 'FAQPage', mainEntity: p.faq.map((f) => ({ '@type': 'Question', name: f.q[lang], acceptedAnswer: { '@type': 'Answer', text: f.r[lang] } })) });
+---
+<Base lang={lang} titre={titreSeo} description={description} chemin={chemin} ld={ld}>
+  <TetePage lang={lang} titre={p.titre[lang]} sur={v} parent={{ nom: C.parent, chemin: 'pratiques' }} />
+  <section class="section">
+    <div class="large split">
+      <div>
+        <p class="bref"><strong>{t.bref} :</strong> {p.court[lang]} <Todo t="à valider" /></p>
+        <div class="bloc"><h2>{C.pourQui}</h2><p><Todo t={C.valider} /></p></div>
+        <div class="bloc"><h2>{C.etapes}</h2><p><Todo t={C.valider} /></p></div>
+        <div class="bloc faq">
+          <h2>{C.questions}</h2>
+          {p.faq.length
+            ? p.faq.map((f) => <details><summary>{f.q[lang]}</summary><p>{f.r[lang]}</p></details>)
+            : <p><Todo t={C.q} /></p>}
+        </div>
+        <p class="note" style="margin-top:14px">{t.prudence}</p>
+      </div>
+      <VideoSlot video={video} lang={lang} />
+    </div>
+  </section>
+  <Annexes lang={lang} extra={liees} />
+</Base>

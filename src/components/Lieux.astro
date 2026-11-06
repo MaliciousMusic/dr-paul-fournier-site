@@ -1,0 +1,28 @@
+---
+// The two addresses side by side, each with its own phone call to action.
+import { LIEUX, PRATICIEN, adresseComplete, telIntl } from '../config';
+import { UI, type Lang } from '../i18n';
+import Todo from './Todo.astro';
+const { lang } = Astro.props as { lang: Lang };
+const L = {
+  fr: { adresse: 'Adresse', horaires: 'Horaires', tel: 'Téléphone' },
+  en: { adresse: 'Address', horaires: 'Opening hours', tel: 'Phone' },
+}[lang];
+---
+<div class="lieux">
+  {LIEUX.map((l) => {
+    const tel = l.telephone || PRATICIEN.telephone;
+    return (
+      <article class="lieu">
+        <h2>{l.nom[lang]}</h2>
+        <p class="note">{l.usage[lang]}</p>
+        <dl>
+          <div><dt>{L.adresse}</dt><dd>{adresseComplete(l) || <Todo />}</dd></div>
+          <div><dt>{L.horaires}</dt><dd>{l.horaires || <Todo />}</dd></div>
+          <div><dt>{L.tel}</dt><dd>{tel ? <a href={`tel:${telIntl(tel)}`}>{tel}</a> : <Todo />}</dd></div>
+        </dl>
+        {tel && <div class="actions"><a class="btn btn-plein" href={`tel:${telIntl(tel)}`}>{UI[lang].appeler}</a></div>}
+      </article>
+    );
+  })}
+</div>
