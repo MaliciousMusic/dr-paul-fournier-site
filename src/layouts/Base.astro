@@ -53,112 +53,6 @@ const imageAlt = `${PRATICIEN.nom}, ${PRATICIEN.titre[lang].toLowerCase()}`;
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image:alt" content={imageAlt} />
         <link rel="preload" href={police} as="font" type="font/woff2" crossorigin />
-    <script is:inline define:vars={{ police }}>
-      // Every big title is stretched or squeezed, letter shapes included, to fill its box exactly in both directions.
-      // The words are cut into the lines that distort them least. The text stays real text in the page.
-      window.impact = (function () {
-        var racine = document.documentElement;
-        racine.classList.add('js');
-        var CIBLES = 'main h1:not(.accueil-nom), main h2, main h3, .pied-nom';
-        var POLICE = "400 100px 'Oswald Variable', 'Arial Narrow', sans-serif";
-        var ctx = document.createElement('canvas').getContext('2d');
-        var memo = {}, base = null, attente = [], charge = false, ESPACE = 0; // ESPACE: the letter spacing of the titles, from --espace
-
-        // The ink of a line at 100px: where its letters really start and stop, not the box of the font
-        function encre(t) {
-          if (memo[t]) return memo[t];
-          ctx.font = POLICE;
-          var m = ctx.measureText(t.toUpperCase());
-          // the spacing moves every letter after the first: the last one ends that much further
-          return (memo[t] = { g: m.actualBoundingBoxLeft, d: m.actualBoundingBoxRight + ([...t].length - 1) * ESPACE * 100, h: m.actualBoundingBoxAscent, b: m.actualBoundingBoxDescent });
-        }
-        function ligneDeBase() {
-          if (base !== null) return base;
-          var s = document.createElement('span'), p = document.createElement('i');
-          s.className = 'impact-l';
-          s.style.visibility = 'hidden';
-          s.textContent = 'H';
-          p.style.cssText = 'display:inline-block;width:0;height:0';
-          s.appendChild(p);
-          document.body.appendChild(s);
-          base = p.getBoundingClientRect().bottom - s.getBoundingClientRect().top;
-          s.remove();
-          return base;
-        }
-        function coupes(mots, k) {
-          if (k === 1) return [[mots.join(' ')]];
-          var r = [];
-          for (var i = 1; i <= mots.length - k + 1; i++) coupes(mots.slice(i), k - 1).forEach(function (c) { r.push([mots.slice(0, i).join(' ')].concat(c)); });
-          return r;
-        }
-        function choix(texte, L, H, hLigne, uneLigne) {
-          var mots = texte.split(' '), ecart = Math.max(3, Math.round((hLigne || H) * 0.02)), mieux = null, score = Infinity;
-          for (var k = 1; k <= (uneLigne ? 1 : Math.min(mots.length, 6)); k++) {
-            var total = hLigne ? k * hLigne + (k - 1) * ecart : H, h = (total - (k - 1) * ecart) / k;
-            coupes(mots, k).forEach(function (c) {
-              var s = (k - 1) * 0.02;
-              c.forEach(function (l, i) { var e = encre(l); s = Math.max(s, Math.abs(Math.log((e.g + e.d) / (e.h + e.b) / (L / h))) + (k - 1) * 0.02); });
-              if (s < score) { score = s; mieux = { lignes: c, h: h, ecart: ecart, total: total }; }
-            });
-          }
-          return mieux;
-        }
-        // Lays the text into the box. Returns the lines, for the name that types itself.
-        function pose(boite, texte, dans, uneLigne) {
-          texte = texte.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // big titles carry no accents; the page source keeps them
-          var c = getComputedStyle(boite), L = boite.clientWidth;
-          var libre = c.getPropertyValue('--libre').trim() === '1';
-          var hLigne = libre ? parseFloat(c.lineHeight) : 0;
-          var r = choix(texte, L, boite.clientHeight, hLigne, uneLigne), hote = dans || boite, B = ligneDeBase();
-          if (libre) boite.style.height = r.total + 'px';
-          hote.textContent = '';
-          return r.lignes.map(function (l, i) {
-            var e = encre(l);
-            // a line of a block: every line gets the same capitals, accents stand above them
-            if (uneLigne) { var c = encre('H'); e = { g: e.g, d: e.d, h: c.h, b: c.b }; }
-            var sx = L / (e.g + e.d), sy = r.h / (e.h + e.b), y = i * (r.h + r.ecart);
-            var s = document.createElement('span');
-            s.className = 'impact-l';
-            s.textContent = l;
-            s.style.transform = 'translate(' + (e.g * sx).toFixed(2) + 'px,' + (y - (B - e.h) * sy).toFixed(2) + 'px) scale(' + sx.toFixed(4) + ',' + sy.toFixed(4) + ')';
-            hote.appendChild(s);
-            hote.appendChild(document.createTextNode(' '));
-            return { el: s, texte: l };
-          });
-        }
-        function tout() {
-          var e = parseFloat(getComputedStyle(racine).getPropertyValue('--espace')) || 0;
-          if (e !== ESPACE) { ESPACE = e; memo = {}; }
-          document.querySelectorAll(CIBLES).forEach(function (el) {
-            var lien = el.children.length === 1 && el.firstElementChild.tagName === 'A' ? el.firstElementChild : null;
-            if (el.children.length && !lien && !el.querySelector('.impact-l')) return; // a title holding other marks stays as it is
-            if (!el.dataset.t) el.dataset.t = el.textContent.trim().replace(/\s+/g, ' ');
-            if (el.offsetParent !== null && el.clientWidth) pose(el, el.dataset.t, lien);
-          });
-        }
-        function pret(f) { charge ? f() : attente.push(f); }
-        function fin() {
-          memo = {}; base = null;
-          if (charge) return tout();
-          charge = true;
-          tout();
-          racine.classList.add('impact-pret');
-          attente.forEach(function (f) { f(); });
-        }
-        // Loaded by hand: the page's own font rules may not be read yet at this point
-        if (window.FontFace && document.fonts) new FontFace('Oswald Variable', 'url(' + police + ')', { weight: '200 700' }).load().then(function (f) { document.fonts.add(f); fin(); }, fin);
-        addEventListener('load', function () { tout(); });
-        setTimeout(function () { if (!charge) fin(); }, 1500);
-        var prevu = 0, largeur = 0, hauteur = 0;
-        addEventListener('resize', function () {
-          if (innerWidth === largeur && innerHeight === hauteur) return;
-          largeur = innerWidth; hauteur = innerHeight;
-          cancelAnimationFrame(prevu);
-          prevu = requestAnimationFrame(tout);
-        });
-        return { pose: pose, pret: pret, tout: tout };
-      })();
-    </script>
     <script type="application/ld+json" set:html={graphe} />
     {ouverture && (
       <script is:inline>
@@ -248,6 +142,5 @@ const imageAlt = `${PRATICIEN.nom}, ${PRATICIEN.titre[lang].toLowerCase()}`;
       <p class="pied-nom">{PRATICIEN.nom}</p>
       <p class="pied-bas">{t.accesSoins}</p>
     </footer>
-    <script is:inline>impact.tout();</script>
   </body>
 </html>

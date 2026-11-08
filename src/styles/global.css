@@ -28,14 +28,9 @@ p { margin: 0 0 1em; }
   html::-webkit-scrollbar { display: none; }
 }
 
-/* Every heading is set in Oswald, light and spaced, and stretched or squeezed to fill its box exactly, by the script in Base.astro.
-   --libre: 1 = the height follows the text, one line-height per line. --libre: 0 = the height of the box is imposed. */
-main h1:where(:not(.accueil-nom)), main h2, main h3, .pied-nom { --libre: 1; position: relative; margin: 0 0 14px; font: normal 400 clamp(30px, 3.8vw, 52px) / clamp(38px, 4.6vw, 64px) var(--impact); letter-spacing: var(--espace); text-transform: uppercase; color: inherit; overflow-wrap: anywhere; overflow: hidden; overflow: clip; overflow-clip-margin: 2px; }
-main h2 > a { position: absolute; inset: 0; text-decoration: none; }
-main h2 > a:focus-visible { outline-offset: -3px; }
-.impact-l { position: absolute; left: 0; top: 0; display: block; font: normal 400 100px / 1 var(--impact); letter-spacing: var(--espace); text-transform: uppercase; white-space: pre; transform-origin: 0 0; }
-/* nothing shows until the real font is there, the wait is bounded in the script */
-html.js:not(.impact-pret) main h1:where(:not(.accueil-nom)), html.js:not(.impact-pret) main h2, html.js:not(.impact-pret) main h3, html.js:not(.impact-pret) .pied-nom { color: transparent; }
+/* Every heading in the same face, size and spacing: Oswald, light, uppercase. Only the page title and the name in the footer are larger. */
+main h1:where(:not(.accueil-nom)), main h2, main h3, .pied-nom { margin: 0 0 14px; font: normal 400 clamp(24px, 2.4vw, 34px) / 1.12 var(--impact); letter-spacing: var(--espace); text-transform: uppercase; color: inherit; overflow-wrap: anywhere; }
+main h2 > a { text-decoration: none; }
 
 .topo { position: relative; isolation: isolate; }
 .topo::before { content: ''; position: absolute; inset: 0; z-index: -1; background: url('/topo.svg') 0 0 / 1200px 675px; pointer-events: none; }
@@ -153,8 +148,7 @@ html.js:not(.impact-pret) main h1:where(:not(.accueil-nom)), html.js:not(.impact
 .bento-plein { border-left: 0; border-top: 0; }
 .tuile { display: flex; flex-direction: column; min-width: 0; padding: clamp(12px, 1.3vw, 18px); background: var(--fond); color: var(--encre); border-right: 1px solid var(--encre); border-bottom: 1px solid var(--encre); text-decoration: none; transition: background 0.15s ease, color 0.15s ease; }
 a.tuile:hover { background: var(--encre); color: var(--fond); }
-.tuile h2, .tuile h3 { --libre: 0; height: clamp(92px, 8.6vw, 150px); margin-bottom: 12px; font-size: clamp(26px, 3vw, 44px); line-height: 1.04; }
-html:not(.js) .tuile h2, html:not(.js) .tuile h3 { height: auto; }
+.tuile h2, .tuile h3 { margin-bottom: 12px; }
 .tuile p { margin: 0; font-size: 0.82rem; line-height: 1.5; opacity: 0.78; }
 .tuile-large { grid-column: span 2; }
 .fleche { margin-top: auto; padding-top: 12px; font-size: 0.8rem; font-weight: 600; }
@@ -171,16 +165,14 @@ a.tuile:hover .fleche::after { transform: translateX(6px); }
 .annexes .sur { margin: 0 var(--bord) 12px; }
 .annexes-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); border-top: 1px solid var(--encre); }
 .annexes .tuile { min-height: 100%; }
-.annexes .tuile h2 { height: clamp(58px, 5.4vw, 92px); }
 
-/* inner pages: the title filling its full width over the contour lines */
+/* inner pages: the title over the contour lines */
 .tete-page { padding-top: var(--tete); border-bottom: 1px solid #000; }
 .tete-page-in { padding: 14px var(--bord) clamp(14px, 1.8vw, 24px); }
 .tete-page-haut { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 18px; margin-bottom: 12px; font-size: 0.8rem; }
 .fil { margin: 0; font-size: 0.8rem; }
 .tete-page-haut .sur { font-weight: 500; }
-.tete-page h1 { --libre: 0; height: clamp(150px, 31svh, 360px); margin: 0; font-size: clamp(40px, 8vw, 120px); line-height: 1.04; }
-html:not(.js) .tete-page h1 { height: auto; }
+.tete-page h1 { margin: 0; font-size: clamp(36px, 5vw, 72px); line-height: 1.05; }
 .tete-page-bas { margin-top: clamp(12px, 1.6vw, 20px); }
 .tete-page-bas .chapo { margin: 0; }
 
@@ -237,14 +229,13 @@ a.ligne-media:hover { padding-left: 8px; }
 .etapes li + li { margin-top: 4px; }
 .contenu h2:not(:first-child) { margin-top: 1.1em; }
 
-/* footer: the name again, filling the width, over the contour lines */
+/* footer: the name again, over the contour lines */
 .pied { font-size: 0.84rem; border-top: 1px solid #000; }
 .pied a { color: inherit; }
 .pied-grille { display: grid; gap: 18px clamp(18px, 3vw, 44px); grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); padding: clamp(18px, 2.4vw, 32px) var(--bord); }
 .pied ul { list-style: none; margin: 0; padding: 0; display: grid; align-content: start; gap: 3px; }
 .pied-geo { font-weight: 600; letter-spacing: 0.1em; }
-.pied-nom { --libre: 0; height: clamp(90px, 19vw, 320px); margin: 0 var(--bord); font-size: clamp(40px, 11vw, 200px); line-height: 1; }
-html:not(.js) .pied-nom { height: auto; }
+.pied-nom { margin: 0 var(--bord); font-size: clamp(32px, 5vw, 72px); line-height: 1.05; }
 .pied-bas { margin: 0; padding: 12px var(--bord) 16px; font-size: 0.76rem; opacity: 0.8; }
 
 /* phones: same content, tighter, so nothing turns into a long scroll */
