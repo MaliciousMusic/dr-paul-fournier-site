@@ -1,5 +1,18 @@
 // src empty = slot waiting for an edited video. Rule: no recognisable patient, face blurred, no patient name or identifying x-ray.
 // The first one plays on the landing. date = publication date, required for Google to show the video.
+// Working version only, until Paul's own film exists: an 18 s extract of a free video, cropped and turned grey.
+export const VIDEO_DEMO = {
+  titre: { fr: 'Démonstration : pose d’un implant', en: 'Demo: placing an implant' },
+  src: 'video/accueil.mp4',
+  poster: 'video/accueil.webp',
+  son: false,
+  credit: {
+    fr: 'Vidéo de démonstration : « Placement of root analogue ceramic implant », Logicwhatelse, licence CC BY-SA 4.0, Wikimedia Commons. Extrait recadré et passé en noir et blanc, sous la même licence.',
+    en: 'Demo video: “Placement of root analogue ceramic implant”, Logicwhatelse, CC BY-SA 4.0 licence, Wikimedia Commons. Extract cropped and turned black and white, under the same licence.',
+  },
+  source: 'https://commons.wikimedia.org/wiki/File:Placement_of_root_analogue_ceramic_implant.webm',
+};
+
 export const VIDEOS = [
   { id: 'presentation', titre: { fr: 'Le Dr Fournier présente sa pratique', en: 'Dr Fournier introduces his practice' }, src: '', poster: '', date: '' },
   { id: 'procedure', titre: { fr: 'Une procédure, étape par étape', en: 'A procedure, step by step' }, src: '', poster: '', date: '' },

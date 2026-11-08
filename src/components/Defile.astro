@@ -1,39 +1,20 @@
 ---
-// Paul's whole background, on the ruler, scrolling right to left in a loop. Hover, focus or a tap holds it.
-// Cells are as wide as a whole number of ruler divisions, so the ruler joins without a seam when the loop restarts.
+// The practices, on the ruler, scrolling right to left in a loop at the foot of the first screen. Each one leads to its page.
+// Hover, focus or a tap holds it. Cells are as wide as a whole number of ruler divisions, so the ruler joins without a seam.
 // The page holds one copy, the script adds what the loop needs. No JavaScript or reduced motion: a band scrolled by hand.
-import { DRAFT } from '../config';
-import { EVENEMENTS } from '../data/evenements';
-import { PRESSE } from '../data/presse';
-import { type Lang } from '../i18n';
+import { PRATIQUES } from '../data/pratiques';
+import { href, type Lang } from '../i18n';
 const { lang } = Astro.props as { lang: Lang };
-const L = {
-  fr: {
-    nom: 'Parcours du Dr Paul Fournier',
-    debut: [['Formation', 'Faculté de chirurgie dentaire de Clermont-Ferrand'], ['CHU et université', 'Enseignement et hôpital'], ['Diplômes universitaires', 'Et formations complémentaires'], ['ITI', 'International Team for Implantology'], ['Formateur', 'Pour les praticiens']],
-    fin: ['Aujourd’hui', 'Clermont-Ferrand et Brioude, en cabinet et à la clinique'],
-  },
-  en: {
-    nom: 'Background of Dr Paul Fournier',
-    debut: [['Training', 'Faculty of Dentistry, Clermont-Ferrand'], ['University hospital and university', 'Teaching and hospital'], ['University diplomas', 'And additional courses'], ['ITI', 'International Team for Implantology'], ['Teacher', 'For practitioners']],
-    fin: ['Today', 'Clermont-Ferrand and Brioude, at his practices and the clinic'],
-  },
-}[lang];
-// Courses and press, oldest first, from the same data as their own pages
-const dates = [
-  ...EVENEMENTS.filter((e) => DRAFT || !e.aConfirmer).map((e) => ({ date: e.date, titre: e.titre, detail: e.organisateur })),
-  ...PRESSE.map((p) => ({ date: p.date, titre: p.titre, detail: p.type[lang] })),
-].sort((a, b) => a.date.localeCompare(b.date)).map((d) => [d.titre, `${d.date.slice(0, 4)}, ${d.detail}`]);
-const lignes = [...L.debut, ...dates, L.fin];
+const nom = lang === 'fr' ? 'Pratiques du Dr Paul Fournier' : 'Treatments by Dr Paul Fournier';
 ---
-<div id="defile" class="defile noir" style={`--n:${lignes.length}`} tabindex="0" role="region" aria-label={L.nom}>
+<nav id="defile" class="defile" style={`--n:${PRATIQUES.length}`} aria-label={nom}>
   <div class="defile-piste">
     <div class="regle" aria-hidden="true"></div>
     <ul class="reperes">
-      {lignes.map(([a, b]) => <li><strong>{a}</strong>{b}</li>)}
+      {PRATIQUES.map((p) => <li><a href={href(lang, `pratiques/${p.slug}`)}>{p.titre[lang]}</a></li>)}
     </ul>
   </div>
-</div>
+</nav>
 <script is:inline>
   (function () {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -42,10 +23,11 @@ const lignes = [...L.debut, ...dates, L.fin];
     for (var i = 1; i < copies; i++) {
       var c = liste.cloneNode(true);
       c.setAttribute('aria-hidden', 'true');
+      c.querySelectorAll('a').forEach(function (a) { a.tabIndex = -1; });
       piste.appendChild(c);
     }
     piste.style.setProperty('--copies', copies);
     d.classList.add('roule');
-    d.addEventListener('click', function () { d.classList.toggle('arret'); });
+    d.addEventListener('pointerdown', function (e) { if (e.pointerType === 'touch') d.classList.toggle('arret'); });
   })();
 </script>

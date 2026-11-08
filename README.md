@@ -25,3 +25,5 @@ npm run dev
 ## Droits
 
 Tous droits réservés. Code, textes et images ne sont pas réutilisables sans autorisation.
+
+Seule exception : `public/video/accueil.mp4`, vidéo de démonstration tirée de « Placement of root analogue ceramic implant » de Logicwhatelse ([Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Placement_of_root_analogue_ceramic_implant.webm)), licence CC BY-SA 4.0, recadrée et passée en noir et blanc, diffusée sous la même licence.

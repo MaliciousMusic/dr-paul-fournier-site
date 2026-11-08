@@ -4,9 +4,9 @@ import { DRAFT, PRATICIEN, LIEUX, adresseComplete, telIntl } from '../config';
 import { UI, asset, href, type Lang } from '../i18n';
 import { NAV, nomCat } from '../data/categories';
 import { grapheBase } from '../seo';
-import anton from '@fontsource/anton/files/anton-latin-400-normal.woff2?url';
+import police from '@fontsource-variable/oswald/files/oswald-latin-wght-normal.woff2?url';
 import Todo from '../components/Todo.astro';
-import Monogramme from '../components/Monogramme.astro';
+import Logo from '../components/Logo.astro';
 
 interface Props { lang: Lang; titre: string; description: string; chemin?: string; ld?: object[]; sansTraduction?: boolean; ouverture?: boolean }
 const { lang, titre, description, chemin = '', ld = [], sansTraduction = false, ouverture = false } = Astro.props;
@@ -38,7 +38,7 @@ const imageAlt = `${PRATICIEN.nom}, ${PRATICIEN.titre[lang].toLowerCase()}`;
     </>}
     <link rel="icon" href={asset('favicon.svg')} type="image/svg+xml" />
     <link rel="apple-touch-icon" href={asset('apple-touch-icon.png')} />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#ffffff" />
     <meta name="author" content="Dr Paul Fournier" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={PRATICIEN.nom} />
@@ -52,25 +52,25 @@ const imageAlt = `${PRATICIEN.nom}, ${PRATICIEN.titre[lang].toLowerCase()}`;
     <meta property="og:locale" content={lang === 'fr' ? 'fr_FR' : 'en_GB'} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image:alt" content={imageAlt} />
-    {ouverture && DRAFT && <link rel="preload" href={asset('video-attente.webp')} as="image" fetchpriority="high" />}
-    <link rel="preload" href={anton} as="font" type="font/woff2" crossorigin />
-    <script is:inline define:vars={{ anton }}>
+        <link rel="preload" href={police} as="font" type="font/woff2" crossorigin />
+    <script is:inline define:vars={{ police }}>
       // Every big title is stretched or squeezed, letter shapes included, to fill its box exactly in both directions.
       // The words are cut into the lines that distort them least. The text stays real text in the page.
       window.impact = (function () {
         var racine = document.documentElement;
         racine.classList.add('js');
         var CIBLES = 'main h1:not(.accueil-nom), main h2, main h3, .pied-nom';
-        var POLICE = "400 100px Anton, Impact, 'Arial Narrow', sans-serif";
+        var POLICE = "400 100px 'Oswald Variable', 'Arial Narrow', sans-serif";
         var ctx = document.createElement('canvas').getContext('2d');
-        var memo = {}, base = null, attente = [], charge = false;
+        var memo = {}, base = null, attente = [], charge = false, ESPACE = 0; // ESPACE: the letter spacing of the titles, from --espace
 
         // The ink of a line at 100px: where its letters really start and stop, not the box of the font
         function encre(t) {
           if (memo[t]) return memo[t];
           ctx.font = POLICE;
           var m = ctx.measureText(t.toUpperCase());
-          return (memo[t] = { g: m.actualBoundingBoxLeft, d: m.actualBoundingBoxRight, h: m.actualBoundingBoxAscent, b: m.actualBoundingBoxDescent });
+          // the spacing moves every letter after the first: the last one ends that much further
+          return (memo[t] = { g: m.actualBoundingBoxLeft, d: m.actualBoundingBoxRight + ([...t].length - 1) * ESPACE * 100, h: m.actualBoundingBoxAscent, b: m.actualBoundingBoxDescent });
         }
         function ligneDeBase() {
           if (base !== null) return base;
@@ -127,6 +127,8 @@ const imageAlt = `${PRATICIEN.nom}, ${PRATICIEN.titre[lang].toLowerCase()}`;
           });
         }
         function tout() {
+          var e = parseFloat(getComputedStyle(racine).getPropertyValue('--espace')) || 0;
+          if (e !== ESPACE) { ESPACE = e; memo = {}; }
           document.querySelectorAll(CIBLES).forEach(function (el) {
             var lien = el.children.length === 1 && el.firstElementChild.tagName === 'A' ? el.firstElementChild : null;
             if (el.children.length && !lien && !el.querySelector('.impact-l')) return; // a title holding other marks stays as it is
@@ -144,7 +146,7 @@ const imageAlt = `${PRATICIEN.nom}, ${PRATICIEN.titre[lang].toLowerCase()}`;
           attente.forEach(function (f) { f(); });
         }
         // Loaded by hand: the page's own font rules may not be read yet at this point
-        if (window.FontFace && document.fonts) new FontFace('Anton', 'url(' + anton + ')').load().then(function (f) { document.fonts.add(f); fin(); }, fin);
+        if (window.FontFace && document.fonts) new FontFace('Oswald Variable', 'url(' + police + ')', { weight: '200 700' }).load().then(function (f) { document.fonts.add(f); fin(); }, fin);
         addEventListener('load', function () { tout(); });
         setTimeout(function () { if (!charge) fin(); }, 1500);
         var prevu = 0, largeur = 0, hauteur = 0;
@@ -176,7 +178,7 @@ const imageAlt = `${PRATICIEN.nom}, ${PRATICIEN.titre[lang].toLowerCase()}`;
     <header class="tete">
       <div class="tete-haut">
         <div class="tete-in">
-          <a class="marque" href={href(lang)}><Monogramme /><span class="marque-nom">{PRATICIEN.nom}<small class="marque-titre">{PRATICIEN.titre[lang]}</small></span></a>
+          <a class="marque" href={href(lang)}><Logo /><span class="marque-nom">{PRATICIEN.nom}<small class="marque-titre">{PRATICIEN.titre[lang]}</small></span></a>
           <nav class="nav" aria-label="Navigation">
             {NAV.map((c) => <a href={href(lang, c)} data-t={nomCat(c, lang)} aria-current={chemin.startsWith(c) ? 'page' : undefined}>{nomCat(c, lang)}</a>)}
             <a class="langue" href={vers} hreflang={autre} data-t={autre.toUpperCase()}>{autre.toUpperCase()}</a>

@@ -1,13 +1,14 @@
 @import '@fontsource-variable/jost';
-@import '@fontsource/anton/400.css';
+@import '@fontsource-variable/oswald';
 
-/* Black and white, square corners, hard rules, type that fills its box. --encre and --fond swap on black blocks. */
+/* Black on white, square corners, hard rules, type that fills its box. */
 :root {
   --encre: #000;
   --fond: #fff;
   --bord: clamp(12px, 2vw, 28px);
   --police: 'Jost Variable', 'Century Gothic', 'Segoe UI', sans-serif;
-  --impact: 'Anton', Impact, 'Arial Narrow', sans-serif;
+  --impact: 'Oswald Variable', 'Arial Narrow', sans-serif;
+  --espace: 0.08em; /* letter spacing of the titles: the script in Base.astro reads it */
   --tete: 118px;
 }
 
@@ -27,18 +28,17 @@ p { margin: 0 0 1em; }
   html::-webkit-scrollbar { display: none; }
 }
 
-/* Every heading is set in Anton and stretched or squeezed to fill its box exactly, by the script in Base.astro.
+/* Every heading is set in Oswald, light and spaced, and stretched or squeezed to fill its box exactly, by the script in Base.astro.
    --libre: 1 = the height follows the text, one line-height per line. --libre: 0 = the height of the box is imposed. */
-main h1:where(:not(.accueil-nom)), main h2, main h3, .pied-nom { --libre: 1; position: relative; margin: 0 0 14px; font: normal 400 clamp(30px, 3.8vw, 52px) / clamp(38px, 4.6vw, 64px) var(--impact); letter-spacing: 0; text-transform: uppercase; color: inherit; overflow-wrap: anywhere; overflow: hidden; overflow: clip; overflow-clip-margin: 2px; }
+main h1:where(:not(.accueil-nom)), main h2, main h3, .pied-nom { --libre: 1; position: relative; margin: 0 0 14px; font: normal 400 clamp(30px, 3.8vw, 52px) / clamp(38px, 4.6vw, 64px) var(--impact); letter-spacing: var(--espace); text-transform: uppercase; color: inherit; overflow-wrap: anywhere; overflow: hidden; overflow: clip; overflow-clip-margin: 2px; }
 main h2 > a { position: absolute; inset: 0; text-decoration: none; }
 main h2 > a:focus-visible { outline-offset: -3px; }
-.impact-l { position: absolute; left: 0; top: 0; display: block; font: normal 400 100px / 1 var(--impact); letter-spacing: 0; text-transform: uppercase; white-space: pre; transform-origin: 0 0; }
+.impact-l { position: absolute; left: 0; top: 0; display: block; font: normal 400 100px / 1 var(--impact); letter-spacing: var(--espace); text-transform: uppercase; white-space: pre; transform-origin: 0 0; }
 /* nothing shows until the real font is there, the wait is bounded in the script */
 html.js:not(.impact-pret) main h1:where(:not(.accueil-nom)), html.js:not(.impact-pret) main h2, html.js:not(.impact-pret) main h3, html.js:not(.impact-pret) .pied-nom { color: transparent; }
 
-.noir, .tete-page, .pied, .tuile-sombre { --encre: #fff; --fond: #000; background: var(--fond); color: var(--encre); }
 .topo { position: relative; isolation: isolate; }
-.topo::before { content: ''; position: absolute; inset: 0; z-index: -1; background: url('/topo.svg') 0 0 / 1200px 675px; opacity: 0.47; pointer-events: none; }
+.topo::before { content: ''; position: absolute; inset: 0; z-index: -1; background: url('/topo.svg') 0 0 / 1200px 675px; pointer-events: none; }
 /* the scale of a map: fine ticks, a stronger one every ten */
 .regle { height: 9px; color: var(--encre); background: repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 100px) 0 0 / 100% 100%, repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 10px) 0 100% / 100% 4px no-repeat; }
 
@@ -60,14 +60,14 @@ html.js:not(.impact-pret) main h1:where(:not(.accueil-nom)), html.js:not(.impact
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 20px; }
 @media (max-width: 560px) { .actions .btn { flex: 1 1 100%; } }
 
-/* header and sub-header: black, edge to edge, always on screen */
-.tete { --encre: #fff; --fond: #000; border-bottom: 1px solid #fff; position: sticky; top: 0; z-index: 30; width: 100%; height: var(--tete); margin-bottom: calc(-1 * var(--tete)); display: grid; grid-template-rows: 1fr auto; background: #000; color: var(--encre); }
-.tete-haut { position: relative; background: #000 url('/topo.svg') 0 0 / 1200px 675px; }
+/* header and sub-header: white, edge to edge, always on screen */
+.tete { border-bottom: 1px solid #000; position: sticky; top: 0; z-index: 30; width: 100%; height: var(--tete); margin-bottom: calc(-1 * var(--tete)); display: grid; grid-template-rows: 1fr auto; background: #fff; color: var(--encre); }
+.tete-haut { position: relative; background: #fff url('/topo.svg') 0 0 / 1200px 675px; }
 .tete-in { display: flex; align-items: center; gap: 18px; height: 100%; padding: 0 var(--bord); }
 .marque { display: flex; align-items: center; gap: 12px; text-decoration: none; font-size: 1.02rem; letter-spacing: 0.08em; color: var(--encre); white-space: nowrap; }
 .marque-nom { line-height: 1.2; }
 .marque-titre { display: block; font-size: 0.7em; letter-spacing: 0.12em; opacity: 0.85; }
-.pf { flex: none; display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--encre); color: var(--fond); font-size: 0.82rem; letter-spacing: 0.06em; }
+.logo { flex: none; width: auto; height: 46px; }
 .nav { display: flex; gap: clamp(14px, 1.5vw, 24px); margin-left: auto; align-items: center; }
 .nav a { display: inline-block; color: var(--encre); text-align: center; text-decoration: none; font-size: 0.84rem; letter-spacing: 0.07em; padding: 3px 0; white-space: nowrap; transition: font-weight 0.12s ease; }
 .nav a:hover, .nav a:focus-visible, .nav a[aria-current='page'] { font-weight: 600; }
@@ -76,16 +76,16 @@ html.js:not(.impact-pret) main h1:where(:not(.accueil-nom)), html.js:not(.impact
 .langue { font-size: 0.78rem !important; }
 .sous-tete { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); container-type: inline-size; }
 /* both calls stay on one line at any width: the text follows the width of the bar */
-.sous-tete .btn { min-height: 52px; padding: 6px 4px; font-size: min(0.88rem, 3.5cqw); white-space: nowrap; border: 0; border-top: 1px solid rgba(255, 255, 255, 0.28); background: #000; color: #fff; }
-.sous-tete .btn + .btn { border-left: 1px solid rgba(255, 255, 255, 0.28); }
+.sous-tete .btn { min-height: 52px; padding: 6px 4px; font-size: min(0.88rem, 3.5cqw); white-space: nowrap; border: 0; border-top: 1px solid rgba(0, 0, 0, 0.22); background: #fff; color: #000; }
+.sous-tete .btn + .btn { border-left: 1px solid rgba(0, 0, 0, 0.22); }
 /* on hover the colours reverse, the word turns bold and steps left to make room for the phone, which pops in on its right */
 .cta-in { position: relative; display: inline-block; transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), font-weight 0.15s ease; }
 .cta-tel { position: absolute; left: 100%; top: 50%; width: 1.25em; height: 1.25em; margin: -0.625em 0 0 0.9em; opacity: 0; transform: scale(0); transition: transform 0.26s cubic-bezier(0.3, 1.7, 0.5, 1), opacity 0.08s linear; }
-.sous-tete .btn:active, .sous-tete .btn:focus-visible { background: #fff; color: #000; }
+.sous-tete .btn:active, .sous-tete .btn:focus-visible { background: #000; color: #fff; }
 .sous-tete .btn:active .cta-in, .sous-tete .btn:focus-visible .cta-in { font-weight: 600; transform: translateX(-1.075em); }
 .sous-tete .btn:active .cta-tel, .sous-tete .btn:focus-visible .cta-tel { opacity: 1; transform: none; }
 @media (hover: hover) {
-  .sous-tete .btn:hover { background: #fff; color: #000; }
+  .sous-tete .btn:hover { background: #000; color: #fff; }
   .sous-tete .btn:hover .cta-in { font-weight: 600; transform: translateX(-1.075em); }
   .sous-tete .btn:hover .cta-tel { opacity: 1; transform: none; }
 }
@@ -95,8 +95,8 @@ html.js:not(.impact-pret) main h1:where(:not(.accueil-nom)), html.js:not(.impact
   .sous-tete .btn:hover .cta-in, .sous-tete .btn:active .cta-in, .sous-tete .btn:focus-visible .cta-in { transform: none; }
 }
 @media (prefers-reduced-motion: reduce) { .cta-in, .cta-tel { transition: none; } }
-.burger { display: inline-flex; align-items: center; gap: 10px; background: #000; color: var(--encre); cursor: pointer; list-style: none; user-select: none; padding: 7px 12px; border: 1px solid rgba(255, 255, 255, 0.55); font-size: 0.86rem; min-height: 42px; transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease; }
-@media (hover: hover) { .burger:hover { background: #fff; color: #000; border-color: #fff; } }
+.burger { display: inline-flex; align-items: center; gap: 10px; background: #fff; color: var(--encre); cursor: pointer; list-style: none; user-select: none; padding: 7px 12px; border: 1px solid rgba(0, 0, 0, 0.55); font-size: 0.86rem; min-height: 42px; transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease; }
+@media (hover: hover) { .burger:hover { background: #000; color: #fff; border-color: #000; } }
 .burger.presse { animation: burger-presse 0.24s ease-out; }
 @keyframes burger-presse { 40% { transform: scale(0.92); } 75% { transform: scale(1.02); } }
 .burger::-webkit-details-marker { display: none; }
@@ -109,74 +109,49 @@ html.js:not(.impact-pret) main h1:where(:not(.accueil-nom)), html.js:not(.impact
   .mobile { display: block; margin-left: auto; }
   .sous-tete .btn { min-height: 48px; line-height: 1.2; }
   /* the menu unfolds downward, its lines arrive one after the other, and it folds back up */
-  .mobile-in { position: absolute; left: 0; right: 0; top: 100%; padding: 8px var(--bord) 14px; background: #000; display: grid; box-shadow: 0 24px 40px -20px rgba(0, 0, 0, 0.8); z-index: 2; animation: menu-deplie 0.34s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .mobile-in { position: absolute; left: 0; right: 0; top: 100%; padding: 8px var(--bord) 14px; background: #fff; display: grid; border-bottom: 1px solid #000; box-shadow: 0 24px 40px -24px rgba(0, 0, 0, 0.35); z-index: 2; animation: menu-deplie 0.34s cubic-bezier(0.2, 0.8, 0.2, 1); }
   .mobile.ferme .mobile-in { animation: menu-replie 0.22s ease-in forwards; }
   @keyframes menu-deplie { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
   @keyframes menu-replie { from { clip-path: inset(0 0 0 0); } to { clip-path: inset(0 0 100% 0); } }
-  .mobile-in a { color: #fff; text-decoration: none; padding: 11px 0; font-size: 0.98rem; border-bottom: 1px solid rgba(255, 255, 255, 0.18); transition: font-weight 0.16s ease, padding-left 0.16s ease; animation: menu-ligne 0.26s ease-out calc(var(--i) * 26ms + 40ms) backwards; }
+  .mobile-in a { color: #000; text-decoration: none; padding: 11px 0; font-size: 0.98rem; border-bottom: 1px solid rgba(0, 0, 0, 0.16); transition: font-weight 0.16s ease, padding-left 0.16s ease; animation: menu-ligne 0.26s ease-out calc(var(--i) * 26ms + 40ms) backwards; }
   @keyframes menu-ligne { from { opacity: 0; transform: translateY(-8px); } }
   .mobile-in a:last-child { border: 0; }
-  .mobile-in a:focus-visible, .mobile-in a:active { font-weight: 600; padding-left: 10px; outline-color: #fff; }
+  .mobile-in a:focus-visible, .mobile-in a:active { font-weight: 600; padding-left: 10px; outline-color: #000; }
   @media (hover: hover) { .mobile-in a:hover { font-weight: 600; padding-left: 10px; } }
 }
 @media (prefers-reduced-motion: reduce) { .mobile-in, .mobile-in a, .mobile.ferme .mobile-in, .burger.presse { animation: none !important; } }
-@media (max-width: 400px) { .marque { font-size: 0.9rem; gap: 8px; } .pf { width: 34px; height: 34px; font-size: 0.74rem; } .burger { padding: 6px 10px; gap: 8px; font-size: 0.8rem; } }
+@media (max-width: 400px) { .marque { font-size: 0.9rem; gap: 8px; } .logo { height: 38px; } .burger { padding: 6px 10px; gap: 8px; font-size: 0.8rem; } }
 
-/* landing, first screen: the video and the name above the scrolling band, the white line of the band closing the screen to say there is more below */
-.ecran { display: flex; flex-direction: column; min-height: 100svh; }
-.ecran .defile { flex: none; border-bottom-width: 3px; }
-.accueil { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; flex: 1 1 auto; padding: calc(var(--tete) + 24px) 0 clamp(8px, 1.2vw, 16px); background: #000; container-type: inline-size; }
+/* landing, first screen: the video, and the band of practices half in view at the foot of the screen, to invite the scroll */
+.accueil { --bande: 74px; position: relative; overflow: hidden; min-height: calc(100svh - var(--bande) / 2); background: #000; }
 .fond-video { position: absolute; inset: 0; background: #000; }
-.fond-video::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0) 55%); pointer-events: none; }
-.fond-video video, .fond-video img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
-.fond-cmd { position: absolute; z-index: 1; right: var(--bord); top: calc(var(--tete) + 14px); display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.fond-video video, .fond-video img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; }
+.fond-cmd { position: absolute; z-index: 1; right: var(--bord); bottom: calc(var(--bande) / 2 + 12px); display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .fond-cmd button { min-height: 44px; padding: 8px 14px; border: 1px solid rgba(255, 255, 255, 0.55); background: rgba(0, 0, 0, 0.66); color: #fff; font: 500 0.8rem var(--police); letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; }
-.accueil-titre { --t: max(120px, 33svh); --pile: calc(4 * min(5.6svh, 6.4cqw)); position: relative; z-index: 1; }
-.accueil-titre.tape { height: calc(var(--t) + var(--pile)); }
-/* phone held sideways: everything shorter, so the band still fits on the first screen */
-@media (max-height: 500px) {
-  .accueil { padding-top: calc(var(--tete) + 4px); }
-  .accueil-titre { --t: 24svh; --pile: calc(4 * 4.4svh); }
-}
-.accueil-titre.tape .accueil-nom { position: absolute; inset: 0; color: transparent; overflow: hidden; }
-.frappe { position: absolute; inset: 0 1cqw; color: #fff; pointer-events: none; }
-/* the big text stands on the pile; the script raises it line by line */
-.frappe-grand { position: absolute; left: 0; right: 0; bottom: 0; height: var(--t); transform-origin: 0 0; will-change: transform, opacity; }
-/* the block: two wings of flat lines, built from the bottom; the script sets each line's size and place */
-.frappe-bloc { position: absolute; left: 0; right: 0; bottom: 0; height: var(--pile); }
-.frappe-li { position: absolute; left: 0; bottom: 0; transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1); }
-.accueil-nom { margin: 0; padding: 0 1cqw; color: #fff; font: normal 400 calc(98cqw / var(--k-une)) / 1.04 var(--impact); letter-spacing: 0; text-transform: uppercase; white-space: nowrap; }
-@media (max-width: 760px) {
-  .accueil-nom { font-size: inherit; line-height: 1; }
-  .accueil-nom span { display: block; line-height: 1.04; }
-  .accueil-nom .l1 { font-size: calc(98cqw / var(--k-l1)); }
-  .accueil-nom .l2 { font-size: calc(98cqw / 3.46); }
-  .fond-cmd button { min-height: 40px; padding: 5px 10px; font-size: 0.74rem; }
-}
+/* the real title of the page, for search engines and screen readers */
+.accueil-nom { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 760px) { .fond-cmd button { min-height: 40px; padding: 5px 10px; font-size: 0.74rem; } }
 
-/* his background, on the ruler, moving right to left. --w is a whole number of ruler divisions: every cell starts on a long tick */
-/* it ends on a white hairline: unseen above a white tile, a clean edge when the tile below is black */
-.defile { --w: 400px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid #fff; }
+/* the practices, on the ruler, moving right to left. --w is a whole number of ruler divisions: every cell starts on a long tick.
+   Its height is --bande of .accueil, which hides it halfway on the first screen. */
+.defile { --w: 500px; overflow-x: auto; scrollbar-width: none; border-top: 1px solid #000; border-bottom: 1px solid #000; }
 .defile::-webkit-scrollbar { display: none; }
-.defile:focus-visible { outline-offset: -3px; }
 .defile-piste { display: grid; grid-template-columns: repeat(var(--copies, 1), max-content); width: max-content; }
 .defile-piste .regle { grid-column: 1 / -1; }
-.defile.roule { overflow: hidden; cursor: pointer; }
+.defile.roule { overflow: hidden; }
 .defile.roule .defile-piste { animation: defile calc(var(--n) * 10s) linear infinite; }
-.defile.arret .defile-piste, .defile:focus-visible .defile-piste { animation-play-state: paused; }
+.defile.arret .defile-piste, .defile:focus-within .defile-piste { animation-play-state: paused; }
 @media (hover: hover) { .defile:hover .defile-piste { animation-play-state: paused; } }
 @keyframes defile { to { transform: translateX(calc(var(--n) * var(--w) * -1)); } }
 .reperes { display: flex; margin: 0; padding: 0; list-style: none; }
-.reperes li { flex: none; width: var(--w); padding: 12px 16px 14px; border-left: 1px solid rgba(255, 255, 255, 0.28); font-size: 0.82rem; line-height: 1.4; }
-.reperes strong { display: block; font-size: 0.98rem; font-weight: 600; }
-
+.reperes li { flex: none; width: var(--w); height: 63px; border-left: 1px solid rgba(0, 0, 0, 0.22); }
+.reperes a { display: flex; align-items: flex-start; height: 100%; padding: 8px 16px 0; font-size: 0.9rem; font-weight: 500; line-height: 1.25; text-decoration: none; transition: font-weight 0.15s ease, padding-left 0.15s ease; }
+.reperes a:hover, .reperes a:focus-visible { font-weight: 600; padding-left: 24px; }
+.reperes a:focus-visible { outline-offset: -3px; }
 /* hub of tiles: each section at a glance instead of a long scroll. Rules, not gaps. */
 .bento { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--encre); border-left: 1px solid var(--encre); }
 .bento-plein { border-left: 0; border-top: 0; }
 .tuile { display: flex; flex-direction: column; min-width: 0; padding: clamp(12px, 1.3vw, 18px); background: var(--fond); color: var(--encre); border-right: 1px solid var(--encre); border-bottom: 1px solid var(--encre); text-decoration: none; transition: background 0.15s ease, color 0.15s ease; }
-.tuile-sombre { border-color: #000; }
-.bento .tuile-sombre { border-right-color: #fff; border-bottom-color: #fff; }
-.bento a.tuile-sombre:hover { border-color: #000; }
 a.tuile:hover { background: var(--encre); color: var(--fond); }
 .tuile h2, .tuile h3 { --libre: 0; height: clamp(92px, 8.6vw, 150px); margin-bottom: 12px; font-size: clamp(26px, 3vw, 44px); line-height: 1.04; }
 html:not(.js) .tuile h2, html:not(.js) .tuile h3 { height: auto; }
@@ -198,8 +173,8 @@ a.tuile:hover .fleche::after { transform: translateX(6px); }
 .annexes .tuile { min-height: 100%; }
 .annexes .tuile h2 { height: clamp(58px, 5.4vw, 92px); }
 
-/* inner pages: a black block, the title filling its full width */
-.tete-page { padding-top: var(--tete); border-bottom: 1px solid #fff; }
+/* inner pages: the title filling its full width over the contour lines */
+.tete-page { padding-top: var(--tete); border-bottom: 1px solid #000; }
 .tete-page-in { padding: 14px var(--bord) clamp(14px, 1.8vw, 24px); }
 .tete-page-haut { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 18px; margin-bottom: 12px; font-size: 0.8rem; }
 .fil { margin: 0; font-size: 0.8rem; }
@@ -263,7 +238,7 @@ a.ligne-media:hover { padding-left: 8px; }
 .contenu h2:not(:first-child) { margin-top: 1.1em; }
 
 /* footer: the name again, filling the width, over the contour lines */
-.pied { font-size: 0.84rem; border-top: 1px solid #fff; }
+.pied { font-size: 0.84rem; border-top: 1px solid #000; }
 .pied a { color: inherit; }
 .pied-grille { display: grid; gap: 18px clamp(18px, 3vw, 44px); grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); padding: clamp(18px, 2.4vw, 32px) var(--bord); }
 .pied ul { list-style: none; margin: 0; padding: 0; display: grid; align-content: start; gap: 3px; }
@@ -275,8 +250,7 @@ html:not(.js) .pied-nom { height: auto; }
 /* phones: same content, tighter, so nothing turns into a long scroll */
 @media (max-width: 680px) {
   .defile { --w: 300px; }
-  .reperes li { font-size: 0.74rem; padding: 10px 12px 12px; }
-  .reperes strong { font-size: 0.84rem; }
+  .reperes a { padding: 8px 12px 0; font-size: 0.8rem; }
   .annexes-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .annexes .tuile { padding: 10px; }
   .annexes .tuile h2 { margin: 0; }
