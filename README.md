@@ -26,4 +26,4 @@ npm run dev
 
 Tous droits réservés. Code, textes et images ne sont pas réutilisables sans autorisation.
 
-Seule exception : `public/video/accueil.mp4`, vidéo de démonstration tirée de « Placement of root analogue ceramic implant » de Logicwhatelse ([Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Placement_of_root_analogue_ceramic_implant.webm)), licence CC BY-SA 4.0, recadrée et passée en noir et blanc, diffusée sous la même licence.
+Seule exception : `public/video/accueil.mp4`, vidéo de démonstration de Pavel Danilyuk ([Pexels](https://www.pexels.com/video/dentists-working-on-a-patient-6192970/)), utilisée sous la licence Pexels et passée en noir et blanc. Les personnes filmées ne sont pas liées au Dr Fournier. Elle sera remplacée par le film du cabinet.

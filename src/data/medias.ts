@@ -2,15 +2,15 @@
 // The first one plays on the landing. date = publication date, required for Google to show the video.
 // Working version only, until Paul's own film exists: an 18 s extract of a free video, cropped and turned grey.
 export const VIDEO_DEMO = {
-  titre: { fr: 'Démonstration : pose d’un implant', en: 'Demo: placing an implant' },
+  titre: { fr: 'Démonstration : un praticien et son assistante au fauteuil', en: 'Demo: a practitioner and his assistant at the chair' },
   src: 'video/accueil.mp4',
   poster: 'video/accueil.webp',
   son: false,
   credit: {
-    fr: 'Vidéo de démonstration : « Placement of root analogue ceramic implant », Logicwhatelse, licence CC BY-SA 4.0, Wikimedia Commons. Extrait recadré et passé en noir et blanc, sous la même licence.',
-    en: 'Demo video: “Placement of root analogue ceramic implant”, Logicwhatelse, CC BY-SA 4.0 licence, Wikimedia Commons. Extract cropped and turned black and white, under the same licence.',
+    fr: 'Vidéo de démonstration : Pavel Danilyuk, licence Pexels, passée en noir et blanc. Les personnes filmées ne sont pas liées au Dr Fournier.',
+    en: 'Demo video: Pavel Danilyuk, Pexels licence, turned black and white. The people filmed have no link with Dr Fournier.',
   },
-  source: 'https://commons.wikimedia.org/wiki/File:Placement_of_root_analogue_ceramic_implant.webm',
+  source: 'https://www.pexels.com/video/dentists-working-on-a-patient-6192970/',
 };
 
 export const VIDEOS = [
