@@ -1,6 +1,6 @@
 ---
-// The intro video as a background: silent loop that starts by itself, with a visible pause control,
-// and a sound control when the film has sound. Until a video exists, the working version shows the placeholder photo.
+// The intro video as a background: silent loop that starts by itself, still for visitors who asked for less motion,
+// with a sound control only when the film has sound. Until a video exists, the working version shows the placeholder photo.
 import { DRAFT } from '../config';
 import { asset, type Lang } from '../i18n';
 interface Props { video: { titre: Record<Lang, string>; src: string; poster: string; son?: boolean }; lang: Lang }
@@ -9,18 +9,19 @@ const src = video.src && asset(video.src);
 const image = video.poster ? asset(video.poster) : DRAFT ? asset('video-attente.webp') : '';
 const son = video.son !== false;
 const L = {
-  fr: { alt: 'Parapentiste en vol au-dessus de montagnes enneigées', pause: 'Mettre en pause', lecture: 'Lire', son: 'Activer le son', muet: 'Couper le son' },
-  en: { alt: 'Paraglider flying above snow-capped mountains', pause: 'Pause', lecture: 'Play', son: 'Turn sound on', muet: 'Mute' },
+  fr: { alt: 'Parapentiste en vol au-dessus de montagnes enneigées', son: 'Activer le son', muet: 'Couper le son' },
+  en: { alt: 'Paraglider flying above snow-capped mountains', son: 'Turn sound on', muet: 'Mute' },
 }[lang];
 ---
 <div class="fond-video">
   {src ? (
     <>
       <video id="video-intro" autoplay muted loop playsinline preload="auto" poster={image || undefined} src={src} aria-label={video.titre[lang]}></video>
-      <div class="fond-cmd" id="video-cmd" data-pause={L.pause} data-lecture={L.lecture} data-son={L.son} data-muet={L.muet}>
-        <button type="button" data-action="pause">{L.pause}</button>
-        {son && <button type="button" data-action="son">{L.son}</button>}
-      </div>
+      {son && (
+        <div class="fond-cmd" id="video-cmd" data-son={L.son} data-muet={L.muet}>
+          <button type="button" data-action="son">{L.son}</button>
+        </div>
+      )}
     </>
   ) : image ? (
     <img src={image} alt={L.alt} width="867" height="1024" fetchpriority="high" decoding="async" />
@@ -28,19 +29,12 @@ const L = {
 </div>
 <script>
   const v = document.getElementById('video-intro') as HTMLVideoElement | null;
+  if (v && matchMedia('(prefers-reduced-motion: reduce)').matches) v.pause();
   const cmd = document.getElementById('video-cmd');
-  if (v && cmd) {
-    const pause = cmd.querySelector<HTMLButtonElement>('[data-action="pause"]')!;
-    const son = cmd.querySelector<HTMLButtonElement>('[data-action="son"]');
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) v.pause();
-    const maj = () => {
-      pause.textContent = v.paused ? cmd.dataset.lecture! : cmd.dataset.pause!;
-      if (son) son.textContent = v.muted ? cmd.dataset.son! : cmd.dataset.muet!;
-    };
-    pause.addEventListener('click', () => { v.paused ? v.play() : v.pause(); });
-    son?.addEventListener('click', () => { v.muted = !v.muted; if (!v.muted) v.play(); maj(); });
-    v.addEventListener('play', maj);
-    v.addEventListener('pause', maj);
+  const son = cmd?.querySelector<HTMLButtonElement>('[data-action="son"]');
+  if (v && cmd && son) {
+    const maj = () => { son.textContent = v.muted ? cmd.dataset.son! : cmd.dataset.muet!; };
+    son.addEventListener('click', () => { v.muted = !v.muted; if (!v.muted) v.play(); maj(); });
     maj();
   }
 </script>
