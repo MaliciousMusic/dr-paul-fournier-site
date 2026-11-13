@@ -8,7 +8,7 @@ import { DRAFT, PRATICIEN } from '../../config';
 import { PRATIQUES } from '../../data/pratiques';
 import { CATEGORIES } from '../../data/categories';
 import { VIDEOS, VIDEO_DEMO } from '../../data/medias';
-import { UI, href, localePaths, type Lang } from '../../i18n';
+import { UI, asset, href, localePaths, type Lang } from '../../i18n';
 
 export function getStaticPaths() { return localePaths(); }
 const lang = Astro.props.lang as Lang;
@@ -32,13 +32,15 @@ const C = {
 }[lang];
 const tuile = (c: keyof typeof CATEGORIES) => ({ h: href(lang, c), nom: CATEGORIES[c].nom[lang], p: CATEGORIES[c].phrase[lang] });
 const parcours = tuile('parcours'), confreres = tuile('confreres'), medias = tuile('medias'), articles = tuile('articles'), evenements = tuile('evenements'), contact = tuile('contact');
+// The film of the first screen, and its still, fetched first: it is the largest thing on the screen
+const film = VIDEOS[0].src || !DRAFT ? VIDEOS[0] : VIDEO_DEMO;
 const ld = [{ '@type': 'WebPage', '@id': new URL(href(lang), Astro.site).href, name: C.titre, about: { '@id': `${new URL('/', Astro.site).href}#paul-fournier` }, inLanguage: lang }];
 ---
-<Base lang={lang} titre={C.titre} description={C.desc} ld={ld} ouverture>
+<Base lang={lang} titre={C.titre} description={C.desc} ld={ld} ouverture affiche={film.poster ? asset(film.poster) : undefined} affichePetite={'posterPetit' in film && film.posterPetit ? asset(film.posterPetit) : undefined}>
   <OuvertureImplant lang={lang} />
   <section class="accueil">
     <h1 class="accueil-nom">{C.h1}</h1>
-    <VideoFond video={VIDEOS[0].src || !DRAFT ? VIDEOS[0] : VIDEO_DEMO} lang={lang} />
+    <VideoFond video={film} lang={lang} />
   </section>
   <Defile lang={lang} />
   <section>

@@ -6,6 +6,8 @@ export default defineConfig({
   site: process.env.SITE_URL || 'https://dr-fournier-paul.chirurgiens-dentistes.fr',
   base: process.env.BASE_PATH || '/',
   trailingSlash: 'always',
+  // The stylesheet is small: inside each page, it no longer holds up the first display
+  build: { inlineStylesheets: 'always' },
   integrations: [
     sitemap({
       i18n: { defaultLocale: 'fr', locales: { fr: 'fr-FR', en: 'en' } },

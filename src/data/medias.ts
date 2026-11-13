@@ -5,6 +5,7 @@ export const VIDEO_DEMO = {
   titre: { fr: 'Démonstration : un praticien et son assistante au fauteuil', en: 'Demo: a practitioner and his assistant at the chair' },
   src: 'video/accueil.mp4',
   poster: 'video/accueil.webp',
+  posterPetit: 'video/accueil-800.webp', // the same still at 800px, for phones
   son: false,
   credit: {
     fr: 'Vidéo de démonstration : Pavel Danilyuk, licence Pexels, passée en noir et blanc. Les personnes filmées ne sont pas liées au Dr Fournier.',

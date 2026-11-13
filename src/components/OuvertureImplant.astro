@@ -155,7 +155,7 @@ const trait = (d: number, t: number) => `--d:${d}s;--t:${t}s`; // start and dura
       dessin.querySelectorAll('path,ellipse').forEach(function (e) {
         var long = e.getTotalLength ? e.getTotalLength() : 0;
         if (long < 2) return;
-        var m = e.getScreenCTM(), n = Math.max(6, Math.ceil(long / 5)), pts = [], i, p;
+        var m = e.getScreenCTM(), n = Math.max(6, Math.ceil(long / 12)) /* a point every 12 units is enough for a line in motion, and keeps this step short on a phone */, pts = [], i, p;
         for (i = 0; i <= n; i++) {
           p = e.getPointAtLength(long * i / n);
           pts.push([m.a * p.x + m.c * p.y + m.e, m.b * p.x + m.d * p.y + m.f]);
@@ -196,6 +196,11 @@ const trait = (d: number, t: number) => `--d:${d}s;--t:${t}s`; // start and dura
       });
     }
 
+    // A tick at each moment of the opening. Browsers only allow it once the visitor has touched the page, so it is often silent,
+    // and never felt on a computer. Skipped when less motion is asked: the opening does not play then anyway.
+    function vibre(motif) {
+      if (navigator.vibrate && navigator.userActivation && navigator.userActivation.hasBeenActive) navigator.vibrate(motif);
+    }
     function fin() {
       if (fini) return;
       fini = true;
@@ -215,6 +220,7 @@ const trait = (d: number, t: number) => `--d:${d}s;--t:${t}s`; // start and dura
         g.setAttribute('transform', 'translate(0 ' + (-170 * (1 - e)).toFixed(1) + ')');
         vis(e * 2 * Math.PI * 5.5);
         pose = u === 1;
+        if (pose) vibre(12); // the screw seats
       }
       // the crown comes down from above, turning, and seats on the abutment
       if (t >= T.couDebut && !coiffe) {
@@ -224,6 +230,7 @@ const trait = (d: number, t: number) => `--d:${d}s;--t:${t}s`; // start and dura
         c.setAttribute('transform', 'translate(0 ' + (-170 * (1 - f)).toFixed(1) + ')');
         couronne(f * 2 * Math.PI * 3.5, w * w * (3 - 2 * w));
         coiffe = v === 1;
+        if (coiffe) vibre(12); // the crown seats
       }
       if (t >= T.delie) {
         if (!fil) prepareFil();
@@ -232,6 +239,7 @@ const trait = (d: number, t: number) => `--d:${d}s;--t:${t}s`; // start and dura
       if (t >= T.ouvre && !ouvert) {
         ouvert = true;
         o.classList.add('ouvre');
+        vibre([6, 40, 14]); // the screen splits
         if (fil) fil.feuille.remove();
         var video = document.getElementById('video-intro');
         if (video) video.currentTime = 0;
@@ -241,7 +249,7 @@ const trait = (d: number, t: number) => `--d:${d}s;--t:${t}s`; // start and dura
       if (t >= T.fin) return fin();
       raf = requestAnimationFrame(image);
     }
-    o.addEventListener('click', fin);
+    o.addEventListener('click', function () { if (window.haptique) haptique(10); fin(); });
     addEventListener('keydown', fin, { once: true });
     requestAnimationFrame(function (now) { t0 = now; o.classList.add('joue'); raf = requestAnimationFrame(image); });
   })();

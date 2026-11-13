@@ -5,11 +5,13 @@ import { UI, asset, href, type Lang } from '../i18n';
 import { NAV, nomCat } from '../data/categories';
 import { grapheBase } from '../seo';
 import police from '@fontsource-variable/oswald/files/oswald-latin-wght-normal.woff2?url';
+import texte from '@fontsource-variable/jost/files/jost-latin-wght-normal.woff2?url';
 import Todo from '../components/Todo.astro';
 import Logo from '../components/Logo.astro';
+import Topo from '../components/Topo.astro';
 
-interface Props { lang: Lang; titre: string; description: string; chemin?: string; ld?: object[]; sansTraduction?: boolean; ouverture?: boolean }
-const { lang, titre, description, chemin = '', ld = [], sansTraduction = false, ouverture = false } = Astro.props;
+interface Props { lang: Lang; titre: string; description: string; chemin?: string; ld?: object[]; sansTraduction?: boolean; ouverture?: boolean; affiche?: string; affichePetite?: string }
+const { lang, titre, description, chemin = '', ld = [], sansTraduction = false, ouverture = false, affiche = '', affichePetite = '' } = Astro.props;
 const t = UI[lang];
 const site = Astro.site!;
 const canon = new URL(href(lang, chemin), site).href;
@@ -52,7 +54,9 @@ const imageAlt = `${PRATICIEN.nom}, ${PRATICIEN.titre[lang].toLowerCase()}`;
     <meta property="og:locale" content={lang === 'fr' ? 'fr_FR' : 'en_GB'} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image:alt" content={imageAlt} />
-        <link rel="preload" href={police} as="font" type="font/woff2" crossorigin />
+        {!ouverture && <link rel="preload" href={police} as="font" type="font/woff2" crossorigin />} {/* the home page shows no title in this face above the fold */}
+    <link rel="preload" href={texte} as="font" type="font/woff2" crossorigin />
+    {affiche && <link rel="preload" href={affiche} imagesrcset={affichePetite ? `${affichePetite} 800w, ${affiche} 1280w` : undefined} imagesizes="100vw" as="image" fetchpriority="high" />}
     <script type="application/ld+json" set:html={graphe} />
     {ouverture && (
       <script is:inline>
@@ -66,11 +70,39 @@ const imageAlt = `${PRATICIEN.nom}, ${PRATICIEN.titre[lang].toLowerCase()}`;
         })();
       </script>
     )}
+    <script is:inline>
+      // Haptics: a short tick under the finger on each control, never a sound. Android: the vibrator.
+      // iPhone (Safari 18 and later): the system tick of a hidden switch. Computers have nothing to feel, so nothing happens.
+      window.haptique = (function () {
+        var vibreur = 'vibrate' in navigator, interrupteur = null;
+        return function (ms) {
+          if (vibreur) { navigator.vibrate(ms); return; }
+          if (!/iP(hone|ad|od)/.test(navigator.userAgent) && !(navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform))) return;
+          if (!interrupteur) {
+            var i = document.createElement('input');
+            i.type = 'checkbox'; i.setAttribute('switch', ''); i.tabIndex = -1;
+            interrupteur = document.createElement('label');
+            interrupteur.setAttribute('aria-hidden', 'true');
+            interrupteur.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);opacity:0;pointer-events:none';
+            interrupteur.appendChild(i);
+            document.body.appendChild(interrupteur);
+          }
+          interrupteur.click();
+        };
+      })();
+      // On release of the finger, which is when the browser allows it: firmer on the two calls, light everywhere else
+      document.addEventListener('pointerup', function (e) {
+        if (e.pointerType !== 'touch') return;
+        var c = e.target.closest && e.target.closest('a, button, summary, select, input, [data-haptique]');
+        if (c) haptique(c.closest('.sous-tete, .actions') ? 18 : 9);
+      }, { passive: true });
+    </script>
   </head>
   <body>
     <a class="saut" href="#contenu">{t.skip}</a>
     <header class="tete">
-      <div class="tete-haut">
+      <div class="tete-haut topo">
+        <Topo id="tete" />
         <div class="tete-in">
           <a class="marque" href={href(lang)}><Logo /><span class="marque-nom">{PRATICIEN.nom}<small class="marque-titre">{PRATICIEN.titre[lang]}</small></span></a>
           <nav class="nav" aria-label="Navigation">
@@ -118,9 +150,23 @@ const imageAlt = `${PRATICIEN.nom}, ${PRATICIEN.titre[lang].toLowerCase()}`;
         document.addEventListener('click', (e) => { if (!menu.contains(e.target as Node)) fermer(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.open) { fermer(); bouton.focus(); } });
       }
+      // The logo, pressed, screws its implant in before going home; on the home page itself it only brings the top back
+      const marque = document.querySelector<HTMLAnchorElement>('a.marque');
+      const logo = marque?.querySelector('.logo');
+      marque?.addEventListener('click', (e) => {
+        if (!logo || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        e.preventDefault();
+        logo.classList.remove('visse');
+        void logo.getBoundingClientRect();
+        logo.classList.add('visse');
+        const ici = new URL(marque.href).pathname === location.pathname;
+        if (ici) scrollTo({ top: 0, behavior: 'smooth' });
+        else setTimeout(() => { location.href = marque.href; }, 560);
+      });
     </script>
     <main id="contenu"><slot /></main>
     <footer class="pied topo">
+      <Topo id="pied" />
       <div class="regle" aria-hidden="true"></div>
       <div class="pied-grille">
           <div>

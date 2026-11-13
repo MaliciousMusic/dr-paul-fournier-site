@@ -1,0 +1,10 @@
+---
+// The contour lines behind a block, drawn by the browser from public/topo.svg as a repeated pattern.
+// Kept out of CSS on purpose: as a background picture, Lighthouse counted it as the largest thing on the page.
+import { asset } from '../i18n';
+const { id } = Astro.props as { id: string };
+---
+<svg class="topo-fond" aria-hidden="true" focusable="false">
+  <defs><pattern id={`topo-${id}`} width="1200" height="675" patternUnits="userSpaceOnUse"><use href={asset('topo.svg#lignes')} /></pattern></defs>
+  <rect width="100%" height="100%" fill={`url(#topo-${id})`} />
+</svg>

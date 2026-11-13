@@ -79,7 +79,7 @@ for pts, ferme in tracés + anneaux:
     pris = [tuple(p) for p in pts[::4]]
     if not ferme and tuple(pts[-1]) != pris[-1]: pris.append(tuple(pts[-1]))
     d.append('M' + 'L'.join(f'{a:.1f} {b:.1f}' for a, b in pris) + ('Z' if ferme else ''))
-svg = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}"><path fill="none" stroke="#000" stroke-opacity=".2" stroke-width="1" d="{"".join(d)}"/></svg>'
+svg = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}"><path id="lignes" fill="none" stroke="#000" stroke-opacity=".2" stroke-width="1" d="{"".join(d)}"/></svg>'
 open('public/topo.svg', 'w', encoding='utf8').write(svg)
 
 # Check: the largest empty disc in the tile

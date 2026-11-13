@@ -1,9 +1,9 @@
 ---
-// The intro video as a background: silent loop that starts by itself, still for visitors who asked for less motion,
-// with a sound control only when the film has sound. Until a video exists, the working version shows the placeholder photo.
+// The intro video as a background: its still at once, then a silent loop once the page has loaded (the still only, for visitors
+// who asked for less motion), with a sound control only when the film has sound. Until a video exists, the working version shows the placeholder photo.
 import { DRAFT } from '../config';
 import { asset, type Lang } from '../i18n';
-interface Props { video: { titre: Record<Lang, string>; src: string; poster: string; son?: boolean }; lang: Lang }
+interface Props { video: { titre: Record<Lang, string>; src: string; poster: string; posterPetit?: string; son?: boolean }; lang: Lang }
 const { video, lang } = Astro.props;
 const src = video.src && asset(video.src);
 const image = video.poster ? asset(video.poster) : DRAFT ? asset('video-attente.webp') : '';
@@ -16,7 +16,8 @@ const L = {
 <div class="fond-video">
   {src ? (
     <>
-      <video id="video-intro" autoplay muted loop playsinline preload="auto" poster={image || undefined} src={src} aria-label={video.titre[lang]}></video>
+      <video id="video-intro" autoplay muted loop playsinline preload="none" data-src={src} aria-label={video.titre[lang]}></video>
+      {image && <img class="fond-affiche" id="video-affiche" src={image} srcset={video.posterPetit ? `${asset(video.posterPetit)} 800w, ${image} 1280w` : undefined} sizes="100vw" alt="" width="1280" height="586" fetchpriority="high" decoding="async" />}
       {son && (
         <div class="fond-cmd" id="video-cmd" data-son={L.son} data-muet={L.muet}>
           <button type="button" data-action="son">{L.son}</button>
@@ -24,12 +25,21 @@ const L = {
       )}
     </>
   ) : image ? (
-    <img src={image} alt={L.alt} width="867" height="1024" fetchpriority="high" decoding="async" />
+    <img src={image} alt={L.alt} width="640" height="755" fetchpriority="high" decoding="async" />
   ) : null}
 </div>
 <script>
   const v = document.getElementById('video-intro') as HTMLVideoElement | null;
-  if (v && matchMedia('(prefers-reduced-motion: reduce)').matches) v.pause();
+  // The still shows first; the film is fetched once the page has loaded, so it never slows the first display
+  const lance = () => {
+    if (!v || v.src) return;
+    v.src = v.dataset.src!;
+    // the still, laid over the film, steps aside once the film really plays
+    v.addEventListener('playing', () => document.getElementById('video-affiche')?.classList.add('passe'), { once: true });
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    v.play().catch(() => {});
+  };
+  if (document.readyState === 'complete') lance(); else addEventListener('load', lance, { once: true });
   const cmd = document.getElementById('video-cmd');
   const son = cmd?.querySelector<HTMLButtonElement>('[data-action="son"]');
   if (v && cmd && son) {

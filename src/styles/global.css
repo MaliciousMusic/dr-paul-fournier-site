@@ -33,7 +33,7 @@ main h1:where(:not(.accueil-nom)), main h2, main h3, .pied-nom { margin: 0 0 14p
 main h2 > a { text-decoration: none; }
 
 .topo { position: relative; isolation: isolate; }
-.topo::before { content: ''; position: absolute; inset: 0; z-index: -1; background: url('/topo.svg') 0 0 / 1200px 675px; pointer-events: none; }
+.topo-fond { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; max-width: none; pointer-events: none; }
 /* the scale of a map: fine ticks, a stronger one every ten */
 .regle { height: 9px; color: var(--encre); background: repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 100px) 0 0 / 100% 100%, repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 10px) 0 100% / 100% 4px no-repeat; }
 
@@ -57,12 +57,18 @@ main h2 > a { text-decoration: none; }
 
 /* header and sub-header: white, edge to edge, always on screen */
 .tete { border-bottom: 1px solid #000; position: sticky; top: 0; z-index: 30; width: 100%; height: var(--tete); margin-bottom: calc(-1 * var(--tete)); display: grid; grid-template-rows: 1fr auto; background: #fff; color: var(--encre); }
-.tete-haut { position: relative; background: #fff url('/topo.svg') 0 0 / 1200px 675px; }
+.tete-haut { position: relative; isolation: isolate; background: #fff; }
 .tete-in { display: flex; align-items: center; gap: 18px; height: 100%; padding: 0 var(--bord); }
 .marque { display: flex; align-items: center; gap: 12px; text-decoration: none; font-size: 1.02rem; letter-spacing: 0.08em; color: var(--encre); white-space: nowrap; }
 .marque-nom { line-height: 1.2; }
 .marque-titre { display: block; font-size: 0.7em; letter-spacing: 0.12em; opacity: 0.85; }
 .logo { flex: none; width: auto; height: 46px; }
+/* the logo pressed: the screw lifts a little and screws back in, its thread climbing past */
+.logo .logo-vis, .logo .logo-filets { transform-box: view-box; }
+.logo.visse .logo-vis { animation: logo-vis 0.56s cubic-bezier(0.3, 0, 0.2, 1); }
+.logo.visse .logo-filets { animation: logo-filets 0.14s linear 4; }
+@keyframes logo-vis { 18% { transform: translateY(-18px); } }
+@keyframes logo-filets { to { transform: translateY(-26px); } }
 .nav { display: flex; gap: clamp(14px, 1.5vw, 24px); margin-left: auto; align-items: center; }
 .nav a { display: inline-block; color: var(--encre); text-align: center; text-decoration: none; font-size: 0.84rem; letter-spacing: 0.07em; padding: 3px 0; white-space: nowrap; transition: font-weight 0.12s ease; }
 .nav a:hover, .nav a:focus-visible, .nav a[aria-current='page'] { font-weight: 600; }
@@ -121,6 +127,8 @@ main h2 > a { text-decoration: none; }
 .accueil { --bande: 74px; position: relative; overflow: hidden; min-height: calc(100svh - var(--bande) / 2); background: #000; }
 .fond-video { position: absolute; inset: var(--tete) 0 0; background: #000; } /* under the header, not behind it */
 .fond-video video, .fond-video img { width: 100%; height: 100%; object-fit: cover; object-position: 62% 25%; }
+.fond-affiche { position: absolute; inset: 0; transition: opacity 0.4s ease; }
+.fond-affiche.passe { opacity: 0; }
 .fond-cmd { position: absolute; z-index: 1; right: var(--bord); bottom: calc(var(--bande) / 2 + 12px); display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .fond-cmd button { min-height: 44px; padding: 8px 14px; border: 1px solid rgba(255, 255, 255, 0.55); background: rgba(0, 0, 0, 0.66); color: #fff; font: 500 0.8rem var(--police); letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; }
 /* the real title of the page, for search engines and screen readers */
