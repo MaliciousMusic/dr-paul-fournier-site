@@ -22,6 +22,12 @@ export const PRATICIEN = {
   statut: '', // legal form and registration numbers for the legal notice
 };
 
+// Opening hours, one entry per day: null = not given yet (shown as a dash), [] = closed, else the ranges in 24 h time.
+// e.g. lundi: [['09:00', '12:00'], ['14:00', '19:00']]. They also feed the hours Google shows in its box.
+export const JOURS = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'] as const;
+export type Horaires = Record<(typeof JOURS)[number], [string, string][] | null>;
+const aDonner = (): Horaires => ({ lundi: null, mardi: null, mercredi: null, jeudi: null, vendredi: null, samedi: null, dimanche: null });
+
 // Addresses and phones of the two practices come from Santé.fr (November 2026), to be confirmed by Paul. Clinic: still to give.
 export const LIEUX = [
   {
@@ -30,7 +36,7 @@ export const LIEUX = [
     adresse: '8 rue Maréchal Foch',
     cp: '63000',
     ville: 'Clermont-Ferrand',
-    horaires: '',
+    horaires: aDonner(),
     telephone: '04 73 75 80 58',
     usage: { fr: 'Consultations et chirurgie', en: 'Consultations and surgery' },
   },
@@ -40,7 +46,7 @@ export const LIEUX = [
     adresse: '40 avenue Léon Blum',
     cp: '43100',
     ville: 'Brioude',
-    horaires: '',
+    horaires: aDonner(),
     telephone: '04 71 50 25 20',
     usage: { fr: 'Consultations et chirurgie', en: 'Consultations and surgery' },
   },
@@ -50,8 +56,8 @@ export const LIEUX = [
     adresse: '',
     cp: '',
     ville: '',
-    horaires: '',
-    telephone: '',
+    horaires: aDonner(),
+    telephone: '04 73 75 80 58', // same line as the Jaude practice
     usage: { fr: 'Interventions sous anesthésie générale', en: 'Procedures under general anaesthesia' },
   },
 ];

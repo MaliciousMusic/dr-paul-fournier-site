@@ -1,13 +1,16 @@
 ---
-// The two addresses side by side, each with its own phone call to action.
-import { LIEUX, PRATICIEN, adresseComplete, telIntl } from '../config';
+// The places side by side, each with its own phone call to action, and its opening hours folded underneath.
+import { JOURS, LIEUX, PRATICIEN, adresseComplete, telIntl } from '../config';
 import { UI, type Lang } from '../i18n';
 import Todo from './Todo.astro';
 const { lang } = Astro.props as { lang: Lang };
 const L = {
-  fr: { adresse: 'Adresse', horaires: 'Horaires', tel: 'Téléphone' },
-  en: { adresse: 'Address', horaires: 'Opening hours', tel: 'Phone' },
+  fr: { adresse: 'Adresse', horaires: 'Horaires', tel: 'Téléphone', ferme: 'Fermé', jours: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'] },
+  en: { adresse: 'Address', horaires: 'Opening hours', tel: 'Phone', ferme: 'Closed', jours: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] },
 }[lang];
+// 09:00 → 9h in French, 9:00 in English
+const heure = (h: string) => (lang === 'fr' ? h.replace(/^0/, '').replace(':00', 'h').replace(':', 'h') : h.replace(/^0/, ''));
+const plages = (p: [string, string][] | null) => (p === null ? '—' : p.length ? p.map(([a, b]) => `${heure(a)} – ${heure(b)}`).join(', ') : L.ferme);
 ---
 <div class="lieux">
   {LIEUX.map((l) => {
@@ -18,10 +21,18 @@ const L = {
         <p class="note">{l.usage[lang]}</p>
         <dl>
           <div><dt>{L.adresse}</dt><dd>{adresseComplete(l) || <Todo />}</dd></div>
-          <div><dt>{L.horaires}</dt><dd>{l.horaires || <Todo />}</dd></div>
           <div><dt>{L.tel}</dt><dd>{tel ? <a href={`tel:${telIntl(tel)}`}>{tel}</a> : <Todo />}</dd></div>
         </dl>
         {tel && <div class="actions"><a class="btn btn-plein" href={`tel:${telIntl(tel)}`}>{UI[lang].appeler}</a></div>}
+        <details class="horaires">
+          <summary>{L.horaires}<span class="horaires-signe" aria-hidden="true"></span></summary>
+          <table>
+            <caption class="visuellement-cache">{L.horaires}, {l.nom[lang]}</caption>
+            <tbody>
+              {JOURS.map((j, i) => <tr><th scope="row">{L.jours[i]}</th><td>{plages(l.horaires[j])}</td></tr>)}
+            </tbody>
+          </table>
+        </details>
       </article>
     );
   })}

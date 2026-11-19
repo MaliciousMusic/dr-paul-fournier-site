@@ -1,7 +1,12 @@
 // Structured data: tells Google and AI assistants exactly who he is, on every page, in the same words.
-import { EQUIPE, LIEUX, PRATICIEN, SAME_AS, adresseComplete, telIntl } from './config';
+import { EQUIPE, JOURS, LIEUX, PRATICIEN, SAME_AS, adresseComplete, telIntl } from './config';
 import { PRATIQUES } from './data/pratiques';
 import { asset, href, type Lang } from './i18n';
+
+const JOURS_SCHEMA = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+// The hours Google shows in its box: only the days that have been given
+const ouverture = (l: (typeof LIEUX)[number]) =>
+  JOURS.flatMap((j, i) => (l.horaires[j] || []).map(([opens, closes]) => ({ '@type': 'OpeningHoursSpecification', dayOfWeek: `https://schema.org/${JOURS_SCHEMA[i]}`, opens, closes })));
 
 const racine = (site: URL) => new URL(asset(''), site).href;
 export const idPersonne = (site: URL) => `${racine(site)}#paul-fournier`;
@@ -20,6 +25,7 @@ export function grapheBase(site: URL, lang: Lang) {
     hasMap: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${PRATICIEN.nom}, ${adresseComplete(l)}`)}`,
     address: { '@type': 'PostalAddress', streetAddress: l.adresse, postalCode: l.cp, addressLocality: l.ville, addressRegion: 'Auvergne-Rhône-Alpes', addressCountry: 'FR' },
     ...(l.telephone && { telephone: telIntl(l.telephone) }),
+    ...(ouverture(l).length && { openingHoursSpecification: ouverture(l) }),
   }));
   return [
     {

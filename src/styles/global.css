@@ -216,6 +216,34 @@ a.tuile:hover .fleche::after { transform: translateX(6px); }
 /* addresses side by side */
 .lieux { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); border-top: 1px solid var(--encre); border-left: 1px solid var(--encre); }
 .lieu { padding: clamp(14px, 2vw, 26px); border-right: 1px solid var(--encre); border-bottom: 1px solid var(--encre); }
+/* title, use, details, call and hours share their rows from one card to the next: the buttons and the boxes stay level,
+   and opening the hours of one place only lengthens that card */
+@supports (grid-template-rows: subgrid) {
+  .lieu { display: grid; grid-row: span 5; grid-template-rows: subgrid; align-content: start; }
+  .lieu .actions { align-self: end; }
+  .lieu .horaires { align-self: start; }
+}
+.lieu .actions { padding-top: 8px; }
+.lieu .actions .btn { width: 100%; }
+.horaires { margin-top: 12px; border: 1px solid var(--encre); }
+.horaires summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 10px 14px; cursor: pointer; list-style: none; font-size: 0.84rem; font-weight: 600; letter-spacing: 0.08em; user-select: none; transition: background 0.15s ease, color 0.15s ease; }
+.horaires summary::-webkit-details-marker { display: none; }
+@media (hover: hover) { .horaires summary:hover { background: var(--encre); color: var(--fond); } }
+.horaires summary:focus-visible { outline-offset: -3px; }
+/* a plus that turns into a minus when open */
+.horaires-signe { position: relative; flex: none; width: 14px; height: 14px; }
+.horaires-signe::before, .horaires-signe::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; background: currentColor; transition: transform 0.22s ease; }
+.horaires-signe::after { transform: rotate(90deg); }
+.horaires[open] .horaires-signe::after { transform: rotate(0deg); }
+.horaires[open] summary { border-bottom: 1px solid var(--encre); }
+.horaires table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.horaires th, .horaires td { padding: 8px 14px; text-align: left; font-weight: 400; vertical-align: top; }
+.horaires td { text-align: right; }
+.horaires tr + tr > * { border-top: 1px solid rgba(0, 0, 0, 0.14); }
+.horaires[open] table { animation: horaires-deplie 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes horaires-deplie { from { opacity: 0; transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .horaires[open] table { animation: none; } }
+.visuellement-cache { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .lieu dl { display: grid; gap: 8px; margin: 10px 0 0; }
 .lieu dt { font-size: 0.76rem; font-weight: 600; }
 .lieu dd { margin: 0; }

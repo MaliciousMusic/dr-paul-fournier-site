@@ -8,7 +8,7 @@ import { href } from '../i18n';
 
 export const GET: APIRoute = ({ site }) => {
   const url = (chemin = '') => new URL(href('fr', chemin), site).href;
-  const lieux = LIEUX.filter((l) => l.adresse || l.telephone).map((l) => `- ${l.nom.fr} : ${adresseComplete(l)}${l.telephone ? `, tél. ${l.telephone}` : ''} (${l.usage.fr})`);
+  const lieux = LIEUX.filter((l) => l.adresse || l.telephone).map((l) => `- ${l.nom.fr} : ${[adresseComplete(l), l.telephone && `tél. ${l.telephone}`].filter(Boolean).join(', ')} (${l.usage.fr})`);
   const equipe = EQUIPE.map((m) => `- ${`${m.prenom} ${m.nom}`.trim()}${m.role.fr ? `, ${m.role.fr.toLowerCase()}` : ''}`);
   const texte = [
     `# ${PRATICIEN.nom}, chirurgien-dentiste à ${PRATICIEN.ville} et Brioude`,
