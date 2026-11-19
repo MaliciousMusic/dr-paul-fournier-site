@@ -1,7 +1,8 @@
 ---
 // The practices, on the ruler, scrolling right to left in a loop at the foot of the first screen. Each one leads to its page.
-// Hover, focus or a tap holds it. Cells are as wide as a whole number of ruler divisions, so the ruler joins without a seam.
-// The page holds one copy, the script adds what the loop needs. No JavaScript or reduced motion: a band scrolled by hand.
+// It can be dragged with a finger or the mouse, both ways, and carries on with the throw before going back to its pace.
+// Hover or focus holds it. Cells are as wide as a whole number of ruler divisions, so the ruler joins without a seam.
+// The page holds one copy, the script adds what the loop needs. No JavaScript: a band scrolled by hand. Reduced motion: it only moves when dragged.
 import { PRATIQUES } from '../data/pratiques';
 import { href, type Lang } from '../i18n';
 const { lang } = Astro.props as { lang: Lang };
@@ -11,23 +12,109 @@ const nom = lang === 'fr' ? 'Pratiques du Dr Paul Fournier' : 'Treatments by Dr 
   <div class="defile-piste">
     <div class="regle" aria-hidden="true"></div>
     <ul class="reperes">
-      {PRATIQUES.map((p) => <li><a href={href(lang, `pratiques/${p.slug}`)}>{p.titre[lang]}</a></li>)}
+      {PRATIQUES.map((p) => <li><a href={href(lang, `pratiques/${p.slug}`)} draggable="false">{p.titre[lang]}</a></li>)}
     </ul>
   </div>
 </nav>
 <script is:inline>
   (function () {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     var d = document.getElementById('defile'), piste = d.firstElementChild, liste = piste.querySelector('.reperes');
-    var copies = Math.ceil(Math.max(innerWidth, screen.width) / liste.offsetWidth) + 1;
-    for (var i = 1; i < copies; i++) {
-      var c = liste.cloneNode(true);
-      c.setAttribute('aria-hidden', 'true');
-      c.querySelectorAll('a').forEach(function (a) { a.tabIndex = -1; });
-      piste.appendChild(c);
+    var calme = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var L = 0, x = 0, v = 0, avant = 0, visible = true, survol = false, tenu = false, glisse = false;
+    var depart = 0, x0 = 0, dernierX = 0, dernierT = 0, boucle = 0;
+
+    // enough copies to fill the screen plus one list, whatever the direction of the drag
+    function copies() {
+      piste.querySelectorAll('.reperes[aria-hidden]').forEach(function (c) { c.remove(); });
+      L = liste.offsetWidth;
+      var n = Math.ceil(Math.max(innerWidth, screen.width) / L) + 1;
+      for (var i = 1; i < n; i++) {
+        var c = liste.cloneNode(true);
+        c.setAttribute('aria-hidden', 'true');
+        c.querySelectorAll('a').forEach(function (a) { a.tabIndex = -1; });
+        piste.appendChild(c);
+      }
+      piste.style.setProperty('--copies', n);
     }
-    piste.style.setProperty('--copies', copies);
+    // the pace of the old animation: one cell every ten seconds
+    function allure() { return calme || survol || d.contains(document.activeElement) ? 0 : -liste.firstElementChild.offsetWidth / 10000; }
+    function place() {
+      x = ((x % L) - L) % L;
+      piste.style.transform = 'translate3d(' + x + 'px,0,0)';
+    }
+    function pas(t) {
+      boucle = 0;
+      var dt = Math.min(t - (avant || t), 64);
+      avant = t;
+      if (!tenu) {
+        v += (allure() - v) * (1 - Math.exp(-dt / 450)); // the throw fades into the pace
+        x += v * dt;
+        place();
+      }
+      if (visible && !document.hidden && (tenu || Math.abs(v) > 0.0005 || allure())) boucle = requestAnimationFrame(pas);
+      else avant = 0;
+    }
+    function relance() { if (!boucle) boucle = requestAnimationFrame(pas); }
+
+    copies();
     d.classList.add('roule');
-    d.addEventListener('pointerdown', function (e) { if (e.pointerType === 'touch') d.classList.toggle('arret'); });
+    place();
+    relance();
+
+    d.addEventListener('pointerdown', function (e) {
+      if (e.button) return;
+      tenu = true; glisse = false;
+      depart = dernierX = e.clientX; x0 = x; dernierT = e.timeStamp; v = 0;
+      relance();
+    });
+    d.addEventListener('pointermove', function (e) {
+      if (!tenu) return;
+      var dx = e.clientX - depart;
+      if (!glisse && Math.abs(dx) > 6) {
+        glisse = true;
+        d.classList.add('tire');
+        d.setPointerCapture(e.pointerId);
+      }
+      if (!glisse) return;
+      var dt = e.timeStamp - dernierT;
+      if (dt > 0) v = v * 0.6 + ((e.clientX - dernierX) / dt) * 0.4;
+      dernierX = e.clientX; dernierT = e.timeStamp;
+      x = x0 + dx;
+      place();
+    });
+    function lache(e) {
+      if (!tenu) return;
+      tenu = false;
+      d.classList.remove('tire');
+      if (e.timeStamp - dernierT > 80) v = 0; // held still before letting go: no throw
+      v = Math.max(-4, Math.min(4, v));
+      relance();
+    }
+    d.addEventListener('pointerup', lache);
+    d.addEventListener('pointercancel', function (e) { glisse = false; lache(e); });
+    // a drag is not a click on the practice under the finger
+    d.addEventListener('click', function (e) { if (glisse) { e.preventDefault(); e.stopPropagation(); glisse = false; } }, true);
+
+    d.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') { survol = true; relance(); } });
+    d.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') { survol = false; relance(); } });
+    // with the keyboard, the focused practice comes into view, then the band holds
+    d.addEventListener('focusin', function (e) {
+      var li = e.target.closest('li');
+      if (li) { x = -li.offsetLeft + 16; v = 0; place(); }
+    });
+    d.addEventListener('focusout', relance);
+
+    // nothing runs while the band is off screen or the tab is hidden
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { visible = es[0].isIntersecting; if (visible) relance(); }).observe(d);
+    document.addEventListener('visibilitychange', relance);
+    var large = innerWidth;
+    addEventListener('resize', function () {
+      if (innerWidth === large) return; // the address bar of phones changes the height only
+      large = innerWidth;
+      var r = x / L;
+      copies();
+      x = r * L;
+      place();
+    }, { passive: true });
   })();
 </script>

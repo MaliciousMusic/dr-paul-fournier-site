@@ -10,6 +10,7 @@ export default defineConfig({
   build: { inlineStylesheets: 'always' },
   integrations: [
     sitemap({
+      lastmod: new Date(),
       i18n: { defaultLocale: 'fr', locales: { fr: 'fr-FR', en: 'en' } },
     }),
   ],

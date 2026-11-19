@@ -62,3 +62,10 @@ export const telIntl = (t: string) => `+33${t.replace(/\s/g, '').slice(1)}`;
 export const SAME_AS: string[] = [
   // 'https://www.eugenol.com/profils/dr-paul-fournier-3500', // to enable once Paul has confirmed it is his
 ];
+
+// The team around Paul, shown on the home page. Empty role or photo: left blank until Paul gives them.
+// photo: a file in public/, e.g. 'equipe/elodie-galtier.webp' (portrait, 4:5)
+export const EQUIPE = [
+  { id: 'elodie-galtier', prenom: 'Élodie', nom: 'Galtier', role: { fr: '', en: '' }, photo: '' },
+  { id: 'alexandrine', prenom: 'Alexandrine', nom: '', role: { fr: '', en: '' }, photo: '' },
+];

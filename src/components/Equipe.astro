@@ -1,0 +1,30 @@
+---
+// The team: who the patient meets besides Paul. A portrait when there is one, the initials over the contour lines meanwhile.
+import { EQUIPE } from '../config';
+import { asset, type Lang } from '../i18n';
+import Topo from './Topo.astro';
+import Todo from './Todo.astro';
+const { lang } = Astro.props as { lang: Lang };
+const C = {
+  fr: { titre: 'L’équipe', texte: 'Autour du Dr Paul Fournier, elles vous accueillent et vous accompagnent, au téléphone comme au cabinet.' },
+  en: { titre: 'The team', texte: 'Alongside Dr Paul Fournier, they welcome you and look after you, on the phone and at the practice.' },
+}[lang];
+const initiales = (p: (typeof EQUIPE)[number]) => `${p.prenom[0]}${p.nom ? p.nom[0] : ''}`;
+---
+<section id="equipe" class="equipe" aria-labelledby="equipe-titre">
+  <div class="equipe-intro tuile">
+    <h2 id="equipe-titre">{C.titre}</h2>
+    <p>{C.texte}</p>
+  </div>
+  {EQUIPE.map((p) => (
+    <article class="membre tuile">
+      <div class="membre-photo topo">
+        {p.photo
+          ? <img src={asset(p.photo)} alt={`${p.prenom} ${p.nom}`.trim()} width="480" height="600" loading="lazy" decoding="async" />
+          : <><Topo id={`equipe-${p.id}`} /><span class="membre-initiales" aria-hidden="true">{initiales(p)}</span></>}
+      </div>
+      <h3>{p.prenom}{p.nom && <> {p.nom}</>}</h3>
+      <p class="membre-role">{p.role[lang] || <Todo />}</p>
+    </article>
+  ))}
+</section>

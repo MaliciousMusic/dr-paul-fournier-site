@@ -23,6 +23,11 @@ const appel = tel ? `tel:${telIntl(tel)}` : href(lang, 'contact');
 const graphe = JSON.stringify({ '@context': 'https://schema.org', '@graph': [...grapheBase(site, lang), ...ld] });
 const image = new URL(asset('og.png'), site).href;
 const imageAlt = `${PRATICIEN.nom}, ${PRATICIEN.titre[lang].toLowerCase()}`;
+// Read by Bing and smaller engines; Google ignores it but it costs nothing. The words people type, without stuffing.
+const MOTS = {
+  fr: 'Paul Fournier, Dr Paul Fournier, Docteur Fournier, dentiste, chirurgien-dentiste, dentiste Clermont-Ferrand, dentiste Brioude, cabinet dentaire Jaude, implant dentaire, implants dentaires Clermont-Ferrand, greffe osseuse, dents de sagesse, chirurgie dentaire, parodontie, anesthésie générale dentaire',
+  en: 'Paul Fournier, Dr Paul Fournier, dentist, dental surgeon, dentist Clermont-Ferrand, dentist Brioude, dental implants, bone graft, wisdom teeth, oral surgery, general anaesthesia',
+};
 ---
 <!doctype html>
 <html lang={lang}>
@@ -31,7 +36,8 @@ const imageAlt = `${PRATICIEN.nom}, ${PRATICIEN.titre[lang].toLowerCase()}`;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{titre}</title>
     <meta name="description" content={description} />
-    {DRAFT && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="robots" content={DRAFT ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'} />
+    <meta name="keywords" content={MOTS[lang]} />
     <link rel="canonical" href={canon} />
     {!sansTraduction && <>
       <link rel="alternate" hreflang="fr" href={alt('fr')} />
@@ -42,6 +48,10 @@ const imageAlt = `${PRATICIEN.nom}, ${PRATICIEN.titre[lang].toLowerCase()}`;
     <link rel="apple-touch-icon" href={asset('apple-touch-icon.png')} />
     <meta name="theme-color" content="#ffffff" />
     <meta name="author" content="Dr Paul Fournier" />
+    <meta name="geo.region" content="FR-63" />
+    <meta name="geo.placename" content={PRATICIEN.ville} />
+    <meta name="geo.position" content="45.7772;3.0870" />
+    <meta name="ICBM" content="45.7772, 3.0870" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={PRATICIEN.nom} />
     <meta property="og:title" content={titre} />
@@ -52,7 +62,10 @@ const imageAlt = `${PRATICIEN.nom}, ${PRATICIEN.titre[lang].toLowerCase()}`;
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={imageAlt} />
     <meta property="og:locale" content={lang === 'fr' ? 'fr_FR' : 'en_GB'} />
+    {!sansTraduction && <meta property="og:locale:alternate" content={lang === 'fr' ? 'en_GB' : 'fr_FR'} />}
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={titre} />
+    <meta name="twitter:description" content={description} />
     <meta name="twitter:image:alt" content={imageAlt} />
         {!ouverture && <link rel="preload" href={police} as="font" type="font/woff2" crossorigin />} {/* the home page shows no title in this face above the fold */}
     <link rel="preload" href={texte} as="font" type="font/woff2" crossorigin />
@@ -165,6 +178,34 @@ const imageAlt = `${PRATICIEN.nom}, ${PRATICIEN.titre[lang].toLowerCase()}`;
       });
     </script>
     <main id="contenu"><slot /></main>
+    <script is:inline>
+      // Titles never cut a word: when a word is wider than its box, the title steps down until it fits,
+      // and every title of the same grid takes the smallest size, so the tiles stay alike. Without JavaScript, CSS breaks the word.
+      (function () {
+        var SEL = 'main h1:not(.accueil-nom), main h2, main h3, .pied-nom';
+        document.documentElement.classList.add('ajuste');
+        function ajuste() {
+          var titres = [].slice.call(document.querySelectorAll(SEL)), groupes = new Map(), groupeDe = new Map();
+          titres.forEach(function (el) { el.style.fontSize = ''; });
+          titres.forEach(function (el) {
+            if (!el.clientWidth) return;
+            var fs = parseFloat(getComputedStyle(el).fontSize), min = Math.max(13, fs * 0.5);
+            el.style.overflowWrap = '';
+            while (el.scrollWidth > el.clientWidth + 1 && fs > min) { fs -= 1; el.style.fontSize = fs + 'px'; }
+            if (el.scrollWidth > el.clientWidth + 1) el.style.overflowWrap = 'anywhere'; // last resort, never wider than the screen
+            var g = el.closest('.bento, .equipe, .annexes-grille') || el;
+            groupeDe.set(el, g);
+            groupes.set(g, Math.min(groupes.has(g) ? groupes.get(g) : Infinity, fs));
+          });
+          groupeDe.forEach(function (g, el) { if (groupes.get(g) < parseFloat(getComputedStyle(el).fontSize)) el.style.fontSize = groupes.get(g) + 'px'; });
+        }
+        var attente = 0;
+        function plusTard() { cancelAnimationFrame(attente); attente = requestAnimationFrame(ajuste); }
+        ajuste();
+        if (document.fonts) document.fonts.ready.then(plusTard);
+        addEventListener('resize', plusTard, { passive: true });
+      })();
+    </script>
     <footer class="pied topo">
       <Topo id="pied" />
       <div class="regle" aria-hidden="true"></div>
